@@ -47,12 +47,22 @@ class Application(tk.Frame):
         self.player_group = tk.Frame(self)
         self.play_icon = tk.PhotoImage(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'play.png'))
         self.pause_icon = tk.PhotoImage(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'pause.png'))
+        self.randomize_icon = tk.PhotoImage(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'randomize.png'))
+        self.erase_icon = tk.PhotoImage(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'erase.png'))
         self.play_btn = tk.Button(self.player_group, image = self.play_icon, command = self.play, width = 50, height = 50)
         self.pause_btn = tk.Button(self.player_group, image = self.pause_icon, command = self.pause, width = 50, height = 50)
+        self.randomize_btn = tk.Button(self.player_group, image = self.randomize_icon, command = self.randomize, width = 50, height = 50)
+        self.erase_btn = tk.Button(self.player_group, image = self.erase_icon, command = self.erase, width = 50, height = 50)
         
         self.player_group.grid(row = 3, column = 0, sticky = tk.W + tk.S)
         self.play_btn.grid(row = 0, column = 0)
         self.pause_btn.grid(row = 0, column = 1)
+        self.randomize_btn.grid(row = 0, column = 2)
+        self.erase_btn.grid(row = 0, column = 3)
+
+        # Third row (generation info)
+        self.generation_label = tk.Label(self, font = ('Verdana', 10), fg = '#666666', text = 'Generation: 0')
+        self.generation_label.grid(row = 3, column = 1, sticky = tk.E + tk.N + tk.S)
     
     def onValidate(self, d, i, P, s, S, v, V, W):
         if P:
@@ -83,9 +93,9 @@ class Application(tk.Frame):
         self.master.geometry(f'{int(winwidth * newSize)}x{height * newSize + 98}')
         self.help_bar_h.config(width = winwidth * newSize)
 
-        self.setGrid(Grid(height, width), overwrite = True, size = newSize)
+        self.setGrid(Grid(height, width), size = newSize)
 
-    def setGrid(self, gamegrid, overwrite = False, size = 0):
+    def setGrid(self, gamegrid, size = 0):
         self.game.destroy()
         self.game = tk.Frame(self, width = int(self.width_entry.get()) * self.size, height = int(self.height_entry.get()) * self.size)
         self.game.config(bg = 'black')
@@ -107,14 +117,33 @@ class Application(tk.Frame):
 
                 self.squares[i].append(square)
     
+    def updateGrid(self):
+        for i in range(len(self.gamegrid())):
+            for j in range(len(self.gamegrid()[0])):
+                newState = self.gamegrid()[i][j]
+                self.squares[i][j].setState(newState)
+                self.generation_label.config(text = f'Generation: {self.gamegrid.generation}')
+    
     def play(self):
-        s = float(input('Delay between moves (sec): '))
         self.isPlaying = True
         while self.isPlaying:
+            oldGrid = self.gamegrid()
             self.gamegrid.computeNextGen()
-            self.setGrid(self.gamegrid)
-            #time.sleep(s)
-            input()
+            self.updateGrid()
+            self.update()
+            if oldGrid == self.gamegrid(): self.isPlaying = False
 
     def pause(self):
         self.isPlaying = False
+    
+    def randomize(self):
+        self.gamegrid.fillRandom()
+        self.gamegrid.generation = 0
+        self.updateGrid()
+        self.update()
+    
+    def erase(self):
+        self.gamegrid.all(0)
+        self.gamegrid.generation = 0
+        self.updateGrid()
+        self.update()

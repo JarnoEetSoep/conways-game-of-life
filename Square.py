@@ -23,3 +23,8 @@ class Square(tk.Frame):
         
         self._setColor()
         self.gamegrid.change(self.x, self.y, self.state)
+    
+    def setState(self, state):
+        self.state = state
+        self._setColor()
+        self.gamegrid.change(self.x, self.y, self.state)

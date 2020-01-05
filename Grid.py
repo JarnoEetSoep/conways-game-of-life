@@ -5,6 +5,7 @@ class Grid:
         self.arr = [[0] * rows for i in range(cols)]
         self.rows = rows
         self.cols = cols
+        self.generation = 0
     
     def fillRandom(self):
         for i in range(len(self.arr)):
@@ -34,6 +35,7 @@ class Grid:
                     newGrid[i][j] = 1
         
         self.arr = newGrid
+        self.generation += 1
     
     def sumNeigbors(self, x, y):
         sumn = 0
@@ -48,6 +50,11 @@ class Grid:
     
     def change(self, x, y, value):
         self.arr[x][y] = value
+    
+    def all(self, state):
+        for i in range(len(self.arr)):
+            for j in range(len(self.arr[0])):
+                self.arr[i][j] = state
 
     def __call__(self):
         return self.arr
