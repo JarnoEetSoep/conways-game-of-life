@@ -3,6 +3,7 @@ import os
 from Square import Square
 from Grid import Grid
 import time
+from PIL import Image, ImageTk
 
 class Application(tk.Frame):
     def __init__(self, master = None, size = 10, fillRandom = True):
@@ -45,20 +46,29 @@ class Application(tk.Frame):
 
         # Third row (player controls)
         self.player_group = tk.Frame(self)
-        self.play_icon = tk.PhotoImage(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'play.png'))
-        self.pause_icon = tk.PhotoImage(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'pause.png'))
-        self.randomize_icon = tk.PhotoImage(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'randomize.png'))
-        self.erase_icon = tk.PhotoImage(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'erase.png'))
+        self.play_icon = ImageTk.PhotoImage(Image.open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'play.png')).resize((50, 50), Image.ANTIALIAS))
+        self.pause_icon = ImageTk.PhotoImage(Image.open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'pause.png')).resize((50, 50), Image.ANTIALIAS))
+        self.randomize_icon = ImageTk.PhotoImage(Image.open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'randomize.png')).resize((50, 50), Image.ANTIALIAS))
+        self.skip_icon = ImageTk.PhotoImage(Image.open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'skip.png')).resize((50, 50), Image.ANTIALIAS))
+        self.erase_icon = ImageTk.PhotoImage(Image.open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'erase.png')).resize((50, 50), Image.ANTIALIAS))
         self.play_btn = tk.Button(self.player_group, image = self.play_icon, command = self.play, width = 50, height = 50)
         self.pause_btn = tk.Button(self.player_group, image = self.pause_icon, command = self.pause, width = 50, height = 50)
         self.randomize_btn = tk.Button(self.player_group, image = self.randomize_icon, command = self.randomize, width = 50, height = 50)
         self.erase_btn = tk.Button(self.player_group, image = self.erase_icon, command = self.erase, width = 50, height = 50)
+        self.skip_btn = tk.Button(self.player_group, image = self.skip_icon, command = self.skip, width = 50, height = 50)
+
+        self.play_btn.image = self.play_icon
+        self.pause_btn.image = self.pause_icon
+        self.randomize_btn.image = self.randomize_icon
+        self.erase_btn.image = self.erase_icon
+        self.skip_btn.image = self.skip_icon
         
         self.player_group.grid(row = 3, column = 0, sticky = tk.W + tk.S)
         self.play_btn.grid(row = 0, column = 0)
         self.pause_btn.grid(row = 0, column = 1)
         self.randomize_btn.grid(row = 0, column = 2)
         self.erase_btn.grid(row = 0, column = 3)
+        self.skip_btn.grid(row = 0, column = 4)
 
         # Third row (generation info)
         self.generation_label = tk.Label(self, font = ('Verdana', 10), fg = '#666666', text = 'Generation: 0')
@@ -145,5 +155,10 @@ class Application(tk.Frame):
     def erase(self):
         self.gamegrid.all(0)
         self.gamegrid.generation = 0
+        self.updateGrid()
+        self.update()
+    
+    def skip(self):
+        self.gamegrid.computeNextGen()
         self.updateGrid()
         self.update()
