@@ -17,7 +17,7 @@ class Grid:
 
         for i in range(len(self.arr)):
             for j in range(len(self.arr[0])):
-                neighbors = self.sumNeigbors(i, j)
+                neighbors = self.sumNeighbors(i, j)
                 cell = self.arr[i][j]
 
                 # Rules
@@ -37,7 +37,7 @@ class Grid:
         self.arr = newGrid
         self.generation += 1
     
-    def sumNeigbors(self, x, y):
+    def sumNeighbors(self, x, y):
         sumn = 0
         for i in range(-1, 2):
             for j in range(-1, 2):
