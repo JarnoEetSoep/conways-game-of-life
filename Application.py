@@ -45,9 +45,9 @@ class Application(tk.Frame):
         self.size_entry.grid(row = 0, column = 1, sticky = tk.E)
         self.set_resolution.grid(row = 0, column = 2, sticky = tk.E, ipady = 7, ipadx = 10)
 
-        self.height_entry.insert(0, '23')
+        self.height_entry.insert(0, '25')
         self.width_entry.insert(0, '40')
-        self.size_entry.insert(0, '15')
+        self.size_entry.insert(0, '20')
 
         # Second row (game)
         self.game = tk.Frame(self, width = int(self.width_entry.get()) * self.size, height = int(self.height_entry.get()) * self.size)
@@ -146,37 +146,41 @@ class Application(tk.Frame):
                 self.squares[i].append(square)
     
     def updateGrid(self):
+        self.generation_label.config(text = f'Generation: {self.gamegrid.generation}')
         for i in range(len(self.gamegrid())):
             for j in range(len(self.gamegrid()[0])):
-                newState = self.gamegrid()[i][j]
-                self.squares[i][j].setState(newState)
-                self.generation_label.config(text = f'Generation: {self.gamegrid.generation}')
+                if self.oldGrid[i][j] != self.gamegrid()[i][j]:
+                    newState = self.gamegrid()[i][j]
+                    self.squares[i][j].setState(newState)
     
     def play(self):
         self.isPlaying = True
         while self.isPlaying:
-            oldGrid = self.gamegrid()
+            self.oldGrid = self.gamegrid()
             self.gamegrid.computeNextGen()
             self.updateGrid()
             self.update()
-            if oldGrid == self.gamegrid(): self.isPlaying = False
+            if self.oldGrid == self.gamegrid(): self.isPlaying = False
 
     def pause(self):
         self.isPlaying = False
     
     def randomize(self):
+        self.oldGrid = self.gamegrid()
         self.gamegrid.fillRandom()
         self.gamegrid.generation = 0
         self.updateGrid()
         self.update()
     
     def erase(self):
-        self.gamegrid.all(0)
+        self.oldGrid = self.gamegrid()
+        self.gamegrid.all(0, lambda c: c == 1)
         self.gamegrid.generation = 0
         self.updateGrid()
         self.update()
     
     def skip(self):
+        self.oldGrid = self.gamegrid()
         self.gamegrid.computeNextGen()
         self.updateGrid()
         self.update()

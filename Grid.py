@@ -8,9 +8,12 @@ class Grid:
         self.generation = 0
     
     def fillRandom(self):
+        newGrid = [[0] * self.rows for i in range(self.cols)]
         for i in range(len(self.arr)):
             for j in range(len(self.arr[0])):
-                self.arr[i][j] = randint(0, 1)
+                newGrid[i][j] = randint(0, 1)
+        
+        self.arr = newGrid
     
     def computeNextGen(self):
         newGrid = [[0] * self.rows for i in range(self.cols)]
@@ -51,10 +54,14 @@ class Grid:
     def change(self, x, y, value):
         self.arr[x][y] = value
     
-    def all(self, state):
+    def all(self, state, test = lambda c: True):
+        newGrid = [[0] * self.rows for i in range(self.cols)]
         for i in range(len(self.arr)):
             for j in range(len(self.arr[0])):
-                self.arr[i][j] = state
+                if test(self.arr[i][j]):
+                    newGrid[i][j] = state
+        
+        self.arr = newGrid
 
     def __call__(self):
         return self.arr
