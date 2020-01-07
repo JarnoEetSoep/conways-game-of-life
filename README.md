@@ -13,5 +13,8 @@ Navigate through your command prompt (cmd, terminal) to the folder you just got 
 ### Start
 Start Conway's Game of Life by running `__main__.py`. If everything works correctly, a window should show up. Good luck playing with it!
 
-# Notes
-* .egg will come eventually
+# Todos
+* In-game manual
+* Make a `.egg` file
+* A nice way to set a size for the squares
+* A nice way to set a delay between generations
