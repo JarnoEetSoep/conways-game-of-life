@@ -13,7 +13,7 @@ class Application(tk.Frame):
         self.size = size
         self.fillRandom = fillRandom
         self.isPlaying = False
-        self.master.tk.call('wm', 'iconphoto', self.master._w, ImageTk.PhotoImage(Image.open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'icon.png'))))
+        self.master.tk.call('wm', 'iconphoto', self.master._w, ImageTk.PhotoImage(Image.open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'img/icon.png'))))
         self.create_widgets()
 
     def create_widgets(self):
@@ -55,11 +55,11 @@ class Application(tk.Frame):
 
         # Third row (player controls)
         self.player_group = tk.Frame(self)
-        self.play_icon = ImageTk.PhotoImage(Image.open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'play.png')).resize((50, 50), Image.ANTIALIAS))
-        self.pause_icon = ImageTk.PhotoImage(Image.open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'pause.png')).resize((50, 50), Image.ANTIALIAS))
-        self.randomize_icon = ImageTk.PhotoImage(Image.open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'randomize.png')).resize((50, 50), Image.ANTIALIAS))
-        self.skip_icon = ImageTk.PhotoImage(Image.open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'skip.png')).resize((50, 50), Image.ANTIALIAS))
-        self.erase_icon = ImageTk.PhotoImage(Image.open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'erase.png')).resize((50, 50), Image.ANTIALIAS))
+        self.play_icon = ImageTk.PhotoImage(Image.open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'img/play.png')).resize((50, 50), Image.ANTIALIAS))
+        self.pause_icon = ImageTk.PhotoImage(Image.open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'img/pause.png')).resize((50, 50), Image.ANTIALIAS))
+        self.randomize_icon = ImageTk.PhotoImage(Image.open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'img/randomize.png')).resize((50, 50), Image.ANTIALIAS))
+        self.skip_icon = ImageTk.PhotoImage(Image.open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'img/skip.png')).resize((50, 50), Image.ANTIALIAS))
+        self.erase_icon = ImageTk.PhotoImage(Image.open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'img/erase.png')).resize((50, 50), Image.ANTIALIAS))
         self.play_btn = tk.Button(self.player_group, image = self.play_icon, command = self.play, width = 50, height = 50)
         self.pause_btn = tk.Button(self.player_group, image = self.pause_icon, command = self.pause, width = 50, height = 50)
         self.randomize_btn = tk.Button(self.player_group, image = self.randomize_icon, command = self.randomize, width = 50, height = 50)
