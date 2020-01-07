@@ -13,6 +13,7 @@ class Application(tk.Frame):
         self.size = size
         self.fillRandom = fillRandom
         self.isPlaying = False
+        self.master.tk.call('wm', 'iconphoto', self.master._w, ImageTk.PhotoImage(Image.open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'icon.png'))))
         self.create_widgets()
 
     def create_widgets(self):
@@ -22,27 +23,35 @@ class Application(tk.Frame):
 
         # First row (resolution controls)
         self.resolution_group = tk.Frame(self)
+        self.size_and_set_group = tk.Frame(self)
         vcmd = (self.register(self.onValidate), '%d', '%i', '%P', '%s', '%S', '%v', '%V', '%W')
-        self.height_entry = tk.Entry(self.resolution_group, validate = 'key', validatecommand = vcmd, font = ('Verdana', 20), width = 10)
+        self.height_entry = tk.Entry(self.resolution_group, validate = 'key', validatecommand = vcmd, font = ('Verdana', 20), width = 5)
         self.height_entry.bind('<Return>', self.set_resolution)
         self.x_label = tk.Label(self.resolution_group, text = 'x', font = ('Verdana', 20))
-        self.width_entry = tk.Entry(self.resolution_group, validate = 'key', validatecommand = vcmd, font = ('Verdana', 20), width = 10)
+        self.width_entry = tk.Entry(self.resolution_group, validate = 'key', validatecommand = vcmd, font = ('Verdana', 20), width = 5)
         self.width_entry.bind('<Return>', self.set_resolution)
-        self.set_resolution = tk.Button(self, text = 'Set resolution', command = self.set_resolution, font = ('Verdana', 8))
+        self.size_label = tk.Label(self.size_and_set_group, text = 'Square size: ', font = ('Verdana', 10))
+        self.size_entry = tk.Entry(self.size_and_set_group, validate = 'key', validatecommand = vcmd, font = ('Verdana', 20), width = 5)
+        self.size_entry.bind('<Return>', self.set_resolution)
+        self.set_resolution = tk.Button(self.size_and_set_group, text = 'Set resolution', command = self.set_resolution, font = ('Verdana', 8))
 
-        self.resolution_group.grid(row = 1, column = 0, sticky = tk.W)
-        self.height_entry.grid(row = 0, column = 2, sticky = tk.E)
-        self.x_label.grid(row = 0, column = 1)
+        self.resolution_group.grid(row = 0, column = 0, sticky = tk.W)
         self.width_entry.grid(row = 0, column = 0, sticky = tk.W)
-        self.set_resolution.grid(row = 1, column = 1, sticky = tk.E, ipady = 10, ipadx = 10)
+        self.x_label.grid(row = 0, column = 1, sticky = tk.W)
+        self.height_entry.grid(row = 0, column = 2, sticky = tk.W)
 
-        self.height_entry.insert(0, '20')
-        self.width_entry.insert(0, '35')
+        self.size_and_set_group.grid(row = 0, column = 1, sticky = tk.E)
+        self.size_label.grid(row = 0, column = 0, sticky = tk.E)
+        self.size_entry.grid(row = 0, column = 1, sticky = tk.E)
+        self.set_resolution.grid(row = 0, column = 2, sticky = tk.E, ipady = 7, ipadx = 10)
+
+        self.height_entry.insert(0, '23')
+        self.width_entry.insert(0, '40')
+        self.size_entry.insert(0, '15')
 
         # Second row (game)
         self.game = tk.Frame(self, width = int(self.width_entry.get()) * self.size, height = int(self.height_entry.get()) * self.size)
-        self.game.config(bg = 'black')
-        self.game.grid(row = 2, column = 0, columnspan = 2, sticky = tk.N + tk.W)
+        self.game.grid(row = 1, column = 0, columnspan = 2, sticky = tk.N + tk.W)
 
         # Third row (player controls)
         self.player_group = tk.Frame(self)
@@ -63,7 +72,7 @@ class Application(tk.Frame):
         self.erase_btn.image = self.erase_icon
         self.skip_btn.image = self.skip_icon
         
-        self.player_group.grid(row = 3, column = 0, sticky = tk.W + tk.S)
+        self.player_group.grid(row = 2, column = 0, sticky = tk.W + tk.S)
         self.play_btn.grid(row = 0, column = 0)
         self.pause_btn.grid(row = 0, column = 1)
         self.randomize_btn.grid(row = 0, column = 2)
@@ -72,13 +81,15 @@ class Application(tk.Frame):
 
         # Third row (generation info)
         self.generation_label = tk.Label(self, font = ('Verdana', 10), fg = '#666666', text = 'Generation: 0')
-        self.generation_label.grid(row = 3, column = 1, sticky = tk.E + tk.N + tk.S)
+        self.generation_label.grid(row = 2, column = 1, sticky = tk.E + tk.N + tk.S)
     
     def onValidate(self, d, i, P, s, S, v, V, W):
         if P:
             try:
-                if str(int(P)) == P:
+                if str(int(P)) == P and int(P) > 0:
                     return True
+                else:
+                    return False
             except:
                 return False
         else:
@@ -87,29 +98,36 @@ class Application(tk.Frame):
     def set_resolution(self, e = None):   # pylint: disable=E0202
         if self.height_entry.get() == '' or int(self.height_entry.get()) < 1:
             height = int(self.game.winfo_height() / self.size)
+            self.height_entry.delete(0, tk.END)
+            self.height_entry.insert(0, str(height))
         else:
             height = int(self.height_entry.get())
         
         if self.width_entry.get() == '' or int(self.width_entry.get()) < 1:
             width = int(self.game.winfo_width() / self.size)
+            self.width_entry.delete(0, tk.END)
+            self.width_entry.insert(0, str(width))
         else:
             width = int(self.width_entry.get())
-
-        newSize = int(input('Size: '))
         
-        self.game.config(height = height * newSize, width = width * newSize)
+        if self.size_entry.get() == '' or int(self.size_entry.get()) < 1:
+            self.size_entry.delete(0, tk.END)
+            self.size_entry.insert(0, str(width))
+        else:
+            self.size = int(self.size_entry.get())
+        
+        self.game.config(height = height * self.size, width = width * self.size)
 
-        winwidth = 495 / newSize if width * newSize < 495 else width
-        self.master.geometry(f'{int(winwidth * newSize)}x{height * newSize + 98}')
-        self.help_bar_h.config(width = winwidth * newSize)
+        winwidth = 40 * 15 / self.size if width * self.size < 40 * 15 else width
+        self.master.geometry(f'{int(winwidth * self.size)}x{height * self.size + 93}')
+        self.help_bar_h.config(width = winwidth * self.size)
 
-        self.setGrid(Grid(height, width), size = newSize)
+        self.setGrid(Grid(height, width), size = self.size)
 
     def setGrid(self, gamegrid, size = 0):
         self.game.destroy()
         self.game = tk.Frame(self, width = int(self.width_entry.get()) * self.size, height = int(self.height_entry.get()) * self.size)
-        self.game.config(bg = 'black')
-        self.game.grid(row = 2, column = 0, columnspan = 2, sticky = tk.N + tk.W)
+        self.game.grid(row = 1, column = 0, columnspan = 2, sticky = tk.N + tk.W)
 
         if size == 0: size = self.size
         self.size = size
