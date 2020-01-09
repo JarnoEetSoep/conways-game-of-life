@@ -9,7 +9,7 @@ class Square(tk.Frame):
         self.state = state
         self._setColor()
         self.size = size
-        self.config(height = self.size, width = self.size, bd = 1, relief = 'ridge')
+        self.config(height = self.size, width = self.size, bd = 1, relief = 'ridge', cursor = 'hand2')
         self.bind('<Button-1>', self.switchState)
 
     def _setColor(self):
