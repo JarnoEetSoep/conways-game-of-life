@@ -18,7 +18,7 @@ Start Conway's Game of Life by running `__main__.py`. If everything works correc
 
 # Todos
 * In-game manual
-* Make a `.exe` file
+* Make an `.exe` file
 * ~~A nice way to set a size for the squares~~
 * ~~A nice way to set a delay between generations~~
 * A nice way to change the squares' color
