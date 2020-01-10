@@ -1,3 +1,6 @@
+# Request:
+## I have spent hours to figure out how to package this, and I have decided that I can better focus on the development of the application. If you are able to do this, please contact me.
+
 # Conways-Game-of-Life
 Conway's game of Life in Python 3 using tkinter.
 
@@ -15,7 +18,7 @@ Start Conway's Game of Life by running `__main__.py`. If everything works correc
 
 # Todos
 * In-game manual
-* Make a `.egg` file
+* Make a `.exe` file
 * ~~A nice way to set a size for the squares~~
 * ~~A nice way to set a delay between generations~~
 * A nice way to change the squares' color
