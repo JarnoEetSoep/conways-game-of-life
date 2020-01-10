@@ -15,12 +15,12 @@ class Grid:
         
         self.arr = newGrid
     
-    def computeNextGen(self):
+    def computeNextGen(self, updown, leftright):
         newGrid = [[0] * self.rows for i in range(self.cols)]
 
         for i in range(len(self.arr)):
             for j in range(len(self.arr[0])):
-                neighbors = self.sumNeighbors(i, j)
+                neighbors = self.sumNeighbors(i, j, updown, leftright)
                 cell = self.arr[i][j]
 
                 # Rules
@@ -40,12 +40,22 @@ class Grid:
         self.arr = newGrid
         self.generation += 1
     
-    def sumNeighbors(self, x, y):
+    def sumNeighbors(self, x, y, updown, leftright):
         sumn = 0
         for i in range(-1, 2):
             for j in range(-1, 2):
-                col = (x + i + self.cols) % self.cols
-                row = (y + j + self.rows) % self.rows
+                if leftright:
+                    col = (x + i + self.cols) % self.cols
+                else:
+                    if x + i < 0 or x + i > self.cols - 1: continue
+                    col = x + i
+
+                if updown:
+                    row = (y + j + self.rows) % self.rows
+                else:
+                    if y + j < 0 or y + j > self.rows - 1: continue
+                    row = y + j
+
                 sumn += self.arr[col][row]
         
         sumn -= self.arr[x][y]

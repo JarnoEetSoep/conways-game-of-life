@@ -26,8 +26,9 @@ class Application(tk.Frame):
 
     def create_widgets(self):
         # Styles
-        button_style = {'relief': 'raised', 'cursor': 'hand2'}
-        entry_style = {'relief': 'sunken'}
+        self.button_style = {'relief': 'raised', 'cursor': 'hand2'}
+        self.entry_style = {'relief': 'sunken'}
+        self.checkbutton_style = {'font': ('Verdana', 10)}
 
         # Help row
         self.help_bar_h = ttk.Frame(self, width = 35 * self.size, height = 0)
@@ -39,15 +40,15 @@ class Application(tk.Frame):
 
         self.only_digits = (self.register(self.onValidate), '%d', '%i', '%P', '%s', '%S', '%v', '%V', '%W')
 
-        self.height_entry = tk.Entry(self.resolution_group, validate = 'key', validatecommand = self.only_digits, font = ('Verdana', 20), width = 5, cnf = entry_style)
+        self.height_entry = tk.Entry(self.resolution_group, validate = 'key', validatecommand = self.only_digits, font = ('Verdana', 20), width = 5, cnf = self.entry_style)
         self.height_entry.bind('<Return>', self.set_resolution)
         self.x_label = tk.Label(self.resolution_group, text = 'x', font = ('Verdana', 20))
-        self.width_entry = tk.Entry(self.resolution_group, validate = 'key', validatecommand = self.only_digits, font = ('Verdana', 20), width = 5, cnf = entry_style)
+        self.width_entry = tk.Entry(self.resolution_group, validate = 'key', validatecommand = self.only_digits, font = ('Verdana', 20), width = 5, cnf = self.entry_style)
         self.width_entry.bind('<Return>', self.set_resolution)
         self.size_label = tk.Label(self.size_and_set_group, text = 'Square size: ', font = ('Verdana', 10))
-        self.size_entry = tk.Entry(self.size_and_set_group, validate = 'key', validatecommand = self.only_digits, font = ('Verdana', 20), width = 5, cnf = entry_style)
+        self.size_entry = tk.Entry(self.size_and_set_group, validate = 'key', validatecommand = self.only_digits, font = ('Verdana', 20), width = 5, cnf = self.entry_style)
         self.size_entry.bind('<Return>', self.set_resolution)
-        self.set_resolution = tk.Button(self.size_and_set_group, text = 'Set resolution', command = self.set_resolution, font = ('Verdana', 8), cnf = button_style)
+        self.set_resolution = tk.Button(self.size_and_set_group, text = 'Set resolution', command = self.set_resolution, font = ('Verdana', 8), cnf = self.button_style)
 
         self.resolution_group.grid(row = 0, column = 0, sticky = tk.W)
         self.width_entry.grid(row = 0, column = 0, sticky = tk.W)
@@ -74,17 +75,23 @@ class Application(tk.Frame):
         self.randomize_icon = ImageTk.PhotoImage(Image.open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'img/randomize.png')).resize((50, 50), Image.ANTIALIAS))
         self.skip_icon = ImageTk.PhotoImage(Image.open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'img/skip.png')).resize((50, 50), Image.ANTIALIAS))
         self.erase_icon = ImageTk.PhotoImage(Image.open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'img/erase.png')).resize((50, 50), Image.ANTIALIAS))
-        self.play_btn = tk.Button(self.player_group, image = self.play_icon, command = self.play, width = 50, cnf = button_style)
-        self.pause_btn = tk.Button(self.player_group, image = self.pause_icon, command = self.pause, width = 50, cnf = button_style)
-        self.randomize_btn = tk.Button(self.player_group, image = self.randomize_icon, command = self.randomize, width = 50, cnf = button_style)
-        self.erase_btn = tk.Button(self.player_group, image = self.erase_icon, command = self.erase, width = 50, cnf = button_style)
-        self.skip_btn = tk.Button(self.player_group, image = self.skip_icon, command = self.skip, width = 50, cnf = button_style)
+        self.play_btn = tk.Button(self.player_group, image = self.play_icon, command = self.play, width = 50, cnf = self.button_style)
+        self.pause_btn = tk.Button(self.player_group, image = self.pause_icon, command = self.pause, width = 50, cnf = self.button_style)
+        self.randomize_btn = tk.Button(self.player_group, image = self.randomize_icon, command = self.randomize, width = 50, cnf = self.button_style)
+        self.erase_btn = tk.Button(self.player_group, image = self.erase_icon, command = self.erase, width = 50, cnf = self.button_style)
+        self.skip_btn = tk.Button(self.player_group, image = self.skip_icon, command = self.skip, width = 50, cnf = self.button_style)
 
         self.play_btn.image = self.play_icon
         self.pause_btn.image = self.pause_icon
         self.randomize_btn.image = self.randomize_icon
         self.erase_btn.image = self.erase_icon
         self.skip_btn.image = self.skip_icon
+
+        self.connect_group = tk.Frame(self.player_group)
+        self.updown = tk.IntVar(value = 1)
+        self.leftright = tk.IntVar(value = 1)
+        self.connect_up_down = tk.Checkbutton(self.connect_group, text = 'Connect up and down', variable = self.updown, cnf = self.checkbutton_style)
+        self.connect_left_right = tk.Checkbutton(self.connect_group, text = 'Connect left and right', variable = self.leftright, cnf = self.checkbutton_style)
         
         self.player_group.grid(row = 2, column = 0, sticky = tk.W + tk.S)
         self.play_btn.grid(row = 0, column = 0)
@@ -93,11 +100,15 @@ class Application(tk.Frame):
         self.erase_btn.grid(row = 0, column = 3)
         self.skip_btn.grid(row = 0, column = 4)
 
+        self.connect_group.grid(row = 0, column = 5)
+        self.connect_up_down.grid(row = 0, column = 0)
+        self.connect_left_right.grid(row = 1, column = 0)
+
         # Third row (generation info and quit button)
         self.gen_and_quit = tk.Frame(self, height = 50)
         self.generation_label = tk.Label(self.gen_and_quit, font = ('Verdana', 10), fg = '#666666', text = 'Generation: 0')
         self.quit_icon = ImageTk.PhotoImage(Image.open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'img/quit.png')).resize((50, 50), Image.ANTIALIAS))
-        self.quit_btn = tk.Button(self.gen_and_quit, image = self.quit_icon, command = self.quit, width = 50, cnf = button_style)
+        self.quit_btn = tk.Button(self.gen_and_quit, image = self.quit_icon, command = self.quit, width = 50, cnf = self.button_style)
 
         self.gen_and_quit.grid(row = 2, column = 1, sticky = tk.E + tk.N + tk.S)
         self.generation_label.grid(row = 2, column = 0, sticky = tk.E + tk.N + tk.S)
@@ -138,7 +149,7 @@ class Application(tk.Frame):
         
         self.game.config(height = height * self.size, width = width * self.size)
 
-        winwidth = 40 * 15 / self.size if width * self.size < 40 * 15 else width
+        winwidth = 760 / self.size if width * self.size < 760 else width
         self.master.geometry(f'{int(winwidth * self.size)}x{height * self.size + 93}')
         self.help_bar_h.config(width = winwidth * self.size)
 
@@ -169,7 +180,7 @@ class Application(tk.Frame):
     def updateGrid(self, compute = True):
         if compute:
             self.oldGrid = self.gamegrid()
-            self.gamegrid.computeNextGen()
+            self.gamegrid.computeNextGen(bool(self.updown.get()), bool(self.leftright.get()))
         
         self.generation_label.config(text = f'Generation: {self.gamegrid.generation}')
         for i in range(len(self.gamegrid())):
