@@ -1,5 +1,5 @@
 # Request:
-## I have spent hours to figure out how to package this, and I have decided that I can better focus on the development of the application. If you are able to do this, please contact me.
+## I have spent hours upon hours to figure out how to package this (create an .exe), and I have decided that I can better focus on the development of the application. If you know how to package this, please contact me.
 
 # Conways-Game-of-Life
 Conway's game of Life in Python 3 using tkinter.
