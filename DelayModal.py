@@ -18,7 +18,8 @@ class DelayModal(tk.Toplevel):
 
         self.delay_entry.bind('<Return>', self.close)
     
-    def close(self, e = None):
+    def close(self, e = None, m = 0):
+        if m: self.output.set('-1')
         self.master.master.wm_attributes('-disabled', False)
         self.destroy()
         self.master.master.wm_deiconify()
@@ -27,10 +28,11 @@ class DelayModal(tk.Toplevel):
         self.master.master.wm_attributes('-disabled', True)
         self.transient(self.master)
         self.title('Choose delay between 2 generations')
-        self.protocol('WM_DELETE_WINDOW', self.close)
+        self.protocol('WM_DELETE_WINDOW', lambda: self.close(m = 1))
 
         self.wm_deiconify()
-        self.geometry(f'400x300+{self.master.master.winfo_x() + self.master.master.winfo_width() // 4}+{self.master.master.winfo_y() + self.master.master.winfo_height() // 4}')
+        self.geometry(f'400x300+{self.master.master.winfo_x() + self.master.master.winfo_width() // 2 - 200}+{self.master.master.winfo_y() + self.master.master.winfo_height() // 2 - 150}')
+        self.resizable(0, 0)
         self.delay_entry.focus_force()
         self.wait_window()
 

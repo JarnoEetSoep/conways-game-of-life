@@ -1,15 +1,16 @@
-from PIL import Image, ImageTk
-from tkinter import ttk
 import tkinter as tk
+from tkinter import filedialog
+from PIL import Image, ImageTk
+from Thread import Thread
 import time
 import os
 from Square import Square
 from Grid import Grid
 from DelayModal import DelayModal
-from Thread import Thread
+from HelpModal import HelpModal
 
 class Application(tk.Frame):
-    def __init__(self, master = None, size = 10, fillRandom = True):
+    def __init__(self, master = None, width = 40, height = 25, size = 10, fillRandom = True, file = None):
         super().__init__(master)
         self.master = master
         self.grid()
@@ -21,8 +22,17 @@ class Application(tk.Frame):
         self.master.tk.call('wm', 'iconphoto', self.master._w, ImageTk.PhotoImage(Image.open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'img/icon.png'))))
         
         self.updateGridThread = Thread(self, self.delay, self._playGame)
+
+        self.file = file
         
         self.create_widgets()
+        self.width_entry.insert(0, str(width))
+        self.height_entry.insert(0, str(height))
+        self.size_entry.insert(0, str(size))
+
+        self.master.update()
+
+        self.setResolution()
 
     def create_widgets(self):
         # Styles
@@ -31,7 +41,7 @@ class Application(tk.Frame):
         self.checkbutton_style = {'font': ('Verdana', 10)}
 
         # Help row
-        self.help_bar_h = ttk.Frame(self, width = 35 * self.size, height = 0)
+        self.help_bar_h = tk.Frame(self, width = 35 * self.size, height = 0)
         self.help_bar_h.grid(row = 0, column = 0, sticky = tk.N + tk.W, columnspan = 2)
 
         # First row (resolution controls)
@@ -41,14 +51,14 @@ class Application(tk.Frame):
         self.only_digits = (self.register(self.onValidate), '%d', '%i', '%P', '%s', '%S', '%v', '%V', '%W')
 
         self.height_entry = tk.Entry(self.resolution_group, validate = 'key', validatecommand = self.only_digits, font = ('Verdana', 20), width = 5, cnf = self.entry_style)
-        self.height_entry.bind('<Return>', self.set_resolution)
+        self.height_entry.bind('<Return>', self.setResolution)
         self.x_label = tk.Label(self.resolution_group, text = 'x', font = ('Verdana', 20))
         self.width_entry = tk.Entry(self.resolution_group, validate = 'key', validatecommand = self.only_digits, font = ('Verdana', 20), width = 5, cnf = self.entry_style)
-        self.width_entry.bind('<Return>', self.set_resolution)
+        self.width_entry.bind('<Return>', self.setResolution)
         self.size_label = tk.Label(self.size_and_set_group, text = 'Square size: ', font = ('Verdana', 10))
         self.size_entry = tk.Entry(self.size_and_set_group, validate = 'key', validatecommand = self.only_digits, font = ('Verdana', 20), width = 5, cnf = self.entry_style)
-        self.size_entry.bind('<Return>', self.set_resolution)
-        self.set_resolution = tk.Button(self.size_and_set_group, text = 'Set resolution', command = self.set_resolution, font = ('Verdana', 8), cnf = self.button_style)
+        self.size_entry.bind('<Return>', self.setResolution)
+        self.set_resolution = tk.Button(self.size_and_set_group, text = 'Set resolution', command = self.setResolution, font = ('Verdana', 8), cnf = self.button_style)
 
         self.resolution_group.grid(row = 0, column = 0, sticky = tk.W)
         self.width_entry.grid(row = 0, column = 0, sticky = tk.W)
@@ -60,27 +70,26 @@ class Application(tk.Frame):
         self.size_entry.grid(row = 0, column = 1, sticky = tk.E)
         self.set_resolution.grid(row = 0, column = 2, sticky = tk.E, ipady = 7, ipadx = 10)
 
-        self.height_entry.insert(0, '25')
-        self.width_entry.insert(0, '40')
-        self.size_entry.insert(0, '20')
-
         # Second row (game)
-        self.game = ttk.Frame(self, width = int(self.width_entry.get()) * self.size, height = int(self.height_entry.get()) * self.size)
+        self.game = tk.Frame(self)
         self.game.grid(row = 1, column = 0, columnspan = 2, sticky = tk.N + tk.W)
 
         # Third row (player controls)
         self.player_group = tk.Frame(self)
+        self.help_icon = ImageTk.PhotoImage(Image.open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'img/help.png')).resize((50, 50), Image.ANTIALIAS))
         self.play_icon = ImageTk.PhotoImage(Image.open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'img/play.png')).resize((50, 50), Image.ANTIALIAS))
         self.pause_icon = ImageTk.PhotoImage(Image.open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'img/pause.png')).resize((50, 50), Image.ANTIALIAS))
         self.randomize_icon = ImageTk.PhotoImage(Image.open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'img/randomize.png')).resize((50, 50), Image.ANTIALIAS))
         self.skip_icon = ImageTk.PhotoImage(Image.open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'img/skip.png')).resize((50, 50), Image.ANTIALIAS))
         self.erase_icon = ImageTk.PhotoImage(Image.open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'img/erase.png')).resize((50, 50), Image.ANTIALIAS))
+        self.help_btn = tk.Button(self.player_group, image = self.help_icon, command = self.help, width = 50, cnf = self.button_style)
         self.play_btn = tk.Button(self.player_group, image = self.play_icon, command = self.play, width = 50, cnf = self.button_style)
         self.pause_btn = tk.Button(self.player_group, image = self.pause_icon, command = self.pause, width = 50, cnf = self.button_style)
         self.randomize_btn = tk.Button(self.player_group, image = self.randomize_icon, command = self.randomize, width = 50, cnf = self.button_style)
         self.erase_btn = tk.Button(self.player_group, image = self.erase_icon, command = self.erase, width = 50, cnf = self.button_style)
         self.skip_btn = tk.Button(self.player_group, image = self.skip_icon, command = self.skip, width = 50, cnf = self.button_style)
 
+        self.help_btn.image = self.help_icon
         self.play_btn.image = self.play_icon
         self.pause_btn.image = self.pause_icon
         self.randomize_btn.image = self.randomize_icon
@@ -94,13 +103,14 @@ class Application(tk.Frame):
         self.connect_left_right = tk.Checkbutton(self.connect_group, text = 'Connect left and right', variable = self.leftright, cnf = self.checkbutton_style)
         
         self.player_group.grid(row = 2, column = 0, sticky = tk.W + tk.S)
-        self.play_btn.grid(row = 0, column = 0)
-        self.pause_btn.grid(row = 0, column = 1)
-        self.randomize_btn.grid(row = 0, column = 2)
-        self.erase_btn.grid(row = 0, column = 3)
-        self.skip_btn.grid(row = 0, column = 4)
+        self.help_btn.grid(row = 0, column = 0)
+        self.play_btn.grid(row = 0, column = 1)
+        self.pause_btn.grid(row = 0, column = 2)
+        self.randomize_btn.grid(row = 0, column = 3)
+        self.erase_btn.grid(row = 0, column = 4)
+        self.skip_btn.grid(row = 0, column = 5)
 
-        self.connect_group.grid(row = 0, column = 5)
+        self.connect_group.grid(row = 0, column = 6)
         self.connect_up_down.grid(row = 0, column = 0)
         self.connect_left_right.grid(row = 1, column = 0)
 
@@ -110,9 +120,14 @@ class Application(tk.Frame):
         self.quit_icon = ImageTk.PhotoImage(Image.open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'img/quit.png')).resize((50, 50), Image.ANTIALIAS))
         self.quit_btn = tk.Button(self.gen_and_quit, image = self.quit_icon, command = self.quit, width = 50, cnf = self.button_style)
 
+        self.quit_btn.image = self.quit_icon
+
         self.gen_and_quit.grid(row = 2, column = 1, sticky = tk.E + tk.N + tk.S)
         self.generation_label.grid(row = 2, column = 0, sticky = tk.E + tk.N + tk.S)
         self.quit_btn.grid(row = 2, column = 1, sticky = tk.E + tk.N + tk.S)
+
+        # Help modal
+        self.helpModal = None
     
     def onValidate(self, d, i, P, s, S, v, V, W):
         if P:
@@ -126,7 +141,7 @@ class Application(tk.Frame):
         else:
             return True
     
-    def set_resolution(self, e = None):   # pylint: disable=E0202
+    def setResolution(self, e = None):   # pylint: disable=E0202
         if self.height_entry.get() == '' or int(self.height_entry.get()) < 1:
             height = int(self.game.winfo_height() / self.size)
             self.height_entry.delete(0, tk.END)
@@ -149,7 +164,7 @@ class Application(tk.Frame):
         
         self.game.config(height = height * self.size, width = width * self.size)
 
-        winwidth = 760 / self.size if width * self.size < 760 else width
+        winwidth = 805 / self.size if width * self.size < 805 else width
         self.master.geometry(f'{int(winwidth * self.size)}x{height * self.size + 93}')
         self.help_bar_h.config(width = winwidth * self.size)
 
@@ -198,11 +213,13 @@ class Application(tk.Frame):
     
     def play(self, e = None):
         self.delay = DelayModal(self).show()
-        self.updateGridThread.setDelay(self.delay)
-        self.isPlaying = True
 
-        if not self.updateGridThread.is_alive():
-            self.updateGridThread.start()
+        if self.delay >= 0:
+            self.updateGridThread.setDelay(self.delay)
+            self.isPlaying = True
+
+            if not self.updateGridThread.is_alive():
+                self.updateGridThread.start()
 
     def pause(self):
         self.isPlaying = False
@@ -229,3 +246,9 @@ class Application(tk.Frame):
         self.isPlaying = False
         self.updateGridThread.kill()
         self.master.destroy()
+    
+    def help(self):
+        if self.helpModal and self.helpModal.winfo_exists():
+            self.helpModal.focus_force()
+        else:
+            self.helpModal = HelpModal(self).show()
