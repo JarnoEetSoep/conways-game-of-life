@@ -14,7 +14,7 @@ Navigate through your command prompt (cmd, terminal) to the folder you just got 
 * Apple / Linux: `pip3 install -r requirements.txt`
 
 ### Start
-Start Conway's Game of Life by running `__main__.py`. If everything works correctly, a window should show up. Good luck playing with it!
+Start Conway's Game of Life by running `app/__main__.py`. If everything works correctly, a window should show up. Good luck playing with it!
 
 # Todos
 * In-game manual
