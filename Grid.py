@@ -72,6 +72,13 @@ class Grid:
                     newGrid[i][j] = state
         
         self.arr = newGrid
+    
+    def setGrid(self, grid):
+        if len(grid[0]) == self.rows and len(grid) == self.cols:
+            self.arr = grid
+            return True
+        else:
+            return False
 
     def __call__(self):
         return self.arr

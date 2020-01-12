@@ -9,7 +9,7 @@ width = 8       # 40
 height = 5      # 25
 size = 110      # 20
 
-root.title('Conway\'s Game of Life - by Jarno Romijn')
+root.title('Conway\'s Game of Life')
 
 app = Application(master = root, width = width, height = height, size = size, fillRandom = False)
 

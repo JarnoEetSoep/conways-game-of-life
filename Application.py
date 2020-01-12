@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import filedialog
 from PIL import Image, ImageTk
 from Thread import Thread
+import json
 import time
 import os
 from Square import Square
@@ -10,7 +11,7 @@ from DelayModal import DelayModal
 from HelpModal import HelpModal
 
 class Application(tk.Frame):
-    def __init__(self, master = None, width = 40, height = 25, size = 10, fillRandom = True, file = None):
+    def __init__(self, master = None, width = 40, height = 25, size = 10, fillRandom = True, filepath = None):
         super().__init__(master)
         self.master = master
         self.grid()
@@ -23,12 +24,13 @@ class Application(tk.Frame):
         
         self.updateGridThread = Thread(self, self.delay, self._playGame)
 
-        self.file = file
+        self.filepath = filepath
+        if filepath: self.loadFile()
         
         self.create_widgets()
-        self.width_entry.insert(0, str(width))
-        self.height_entry.insert(0, str(height))
-        self.size_entry.insert(0, str(size))
+        self.width.set(str(width))
+        self.height.set(str(height))
+        self.sizevar.set(str(size))
 
         self.master.update()
 
@@ -44,19 +46,41 @@ class Application(tk.Frame):
         self.help_bar_h = tk.Frame(self, width = 35 * self.size, height = 0)
         self.help_bar_h.grid(row = 0, column = 0, sticky = tk.N + tk.W, columnspan = 2)
 
+        # Top menu
+        self.menu = tk.Menu(self.master)
+        self.menu_file = tk.Menu(self.menu, tearoff = 0)
+        self.menu.add_cascade(label = 'File', menu = self.menu_file)
+
+        self.menu_file.add_command(label = 'New File (Ctrl+N)', command = self.newFile)
+        self.master.bind('<Control-n>', self.newFile)
+        self.menu_file.add_separator()
+        self.menu_file.add_command(label = 'Open... (Ctrl+O)', command = self.openFile)
+        self.master.bind('<Control-o>', self.openFile)
+        self.menu_file.add_separator()
+        self.menu_file.add_command(label = 'Save (Ctrl+S)', command = self.saveFile)
+        self.master.bind('<Control-s>', self.saveFile)
+        self.menu_file.add_command(label = 'Save As... (Ctrl+Shift+S)', command = self.saveFileAs)
+        self.master.bind('<Control-S>', self.saveFileAs)
+
+        self.master.config(menu = self.menu)
+
         # First row (resolution controls)
         self.resolution_group = tk.Frame(self)
         self.size_and_set_group = tk.Frame(self)
 
         self.only_digits = (self.register(self.onValidate), '%d', '%i', '%P', '%s', '%S', '%v', '%V', '%W')
 
-        self.height_entry = tk.Entry(self.resolution_group, validate = 'key', validatecommand = self.only_digits, font = ('Verdana', 20), width = 5, cnf = self.entry_style)
-        self.height_entry.bind('<Return>', self.setResolution)
-        self.x_label = tk.Label(self.resolution_group, text = 'x', font = ('Verdana', 20))
-        self.width_entry = tk.Entry(self.resolution_group, validate = 'key', validatecommand = self.only_digits, font = ('Verdana', 20), width = 5, cnf = self.entry_style)
+        self.width = tk.StringVar()
+        self.height = tk.StringVar()
+        self.sizevar = tk.StringVar()
+
+        self.width_entry = tk.Entry(self.resolution_group, textvariable = self.width, validate = 'key', validatecommand = self.only_digits, font = ('Verdana', 20), width = 5, cnf = self.entry_style)
         self.width_entry.bind('<Return>', self.setResolution)
+        self.x_label = tk.Label(self.resolution_group, text = 'x', font = ('Verdana', 20))
+        self.height_entry = tk.Entry(self.resolution_group, textvariable = self.height, validate = 'key', validatecommand = self.only_digits, font = ('Verdana', 20), width = 5, cnf = self.entry_style)
+        self.height_entry.bind('<Return>', self.setResolution)
         self.size_label = tk.Label(self.size_and_set_group, text = 'Square size: ', font = ('Verdana', 10))
-        self.size_entry = tk.Entry(self.size_and_set_group, validate = 'key', validatecommand = self.only_digits, font = ('Verdana', 20), width = 5, cnf = self.entry_style)
+        self.size_entry = tk.Entry(self.size_and_set_group, textvariable = self.sizevar, validate = 'key', validatecommand = self.only_digits, font = ('Verdana', 20), width = 5, cnf = self.entry_style)
         self.size_entry.bind('<Return>', self.setResolution)
         self.set_resolution = tk.Button(self.size_and_set_group, text = 'Set resolution', command = self.setResolution, font = ('Verdana', 8), cnf = self.button_style)
 
@@ -142,23 +166,20 @@ class Application(tk.Frame):
             return True
     
     def setResolution(self, e = None):   # pylint: disable=E0202
-        if self.height_entry.get() == '' or int(self.height_entry.get()) < 1:
+        if self.width.get() == '' or int(self.width.get()) < 1:
+            width = int(self.game.winfo_width() / self.size)
+            self.width.set(str(width))
+        else:
+            width = int(self.width_entry.get())
+
+        if self.height.get() == '' or int(self.height.get()) < 1:
             height = int(self.game.winfo_height() / self.size)
-            self.height_entry.delete(0, tk.END)
-            self.height_entry.insert(0, str(height))
+            self.height.set(str(height))
         else:
             height = int(self.height_entry.get())
         
-        if self.width_entry.get() == '' or int(self.width_entry.get()) < 1:
-            width = int(self.game.winfo_width() / self.size)
-            self.width_entry.delete(0, tk.END)
-            self.width_entry.insert(0, str(width))
-        else:
-            width = int(self.width_entry.get())
-        
-        if self.size_entry.get() == '' or int(self.size_entry.get()) < 1:
-            self.size_entry.delete(0, tk.END)
-            self.size_entry.insert(0, str(width))
+        if self.sizevar.get() == '' or int(self.sizevar.get()) < 1:
+            self.size.set(str(width))
         else:
             self.size = int(self.size_entry.get())
         
@@ -251,4 +272,71 @@ class Application(tk.Frame):
         if self.helpModal and self.helpModal.winfo_exists():
             self.helpModal.focus_force()
         else:
-            self.helpModal = HelpModal(self).show()
+            self.helpModal = HelpModal(self)
+            self.helpModal.show()
+    
+    def newFile(self, e = None):
+        self.filepath = None
+        self.setResolution()
+
+        self.master.title('Conway\'s Game of Life')
+    
+    def openFile(self, e = None):
+        cgol_path = filedialog.askopenfilename(initialdir = os.path.abspath('.'), title = 'Choose GoL board', filetypes = [('Conway\'s Game of Life save', '*.cgol')])
+
+        if cgol_path:   
+            cgol_path = os.path.abspath(cgol_path)
+            self.filepath = cgol_path
+            self.loadFile()
+    
+    def saveFile(self, e = None):
+        if self.filepath:
+            # just save
+            pass
+        else:
+            self.saveFileAs()
+    
+    def saveFileAs(self, e = None):
+        cgol_path = filedialog.asksaveasfilename(initialdir = os.path.abspath('.'), title = 'Save GoL board', filetypes = [('Conway\'s Game of Life save', '*.cgol')]) + '.cgol'
+        
+        if cgol_path:   
+            cgol_path = os.path.abspath(cgol_path)
+            self.filepath = cgol_path
+
+            self.master.title(f'{os.path.basename(os.path.normpath(self.filepath))} - Conway\'s Game of Life')
+
+            save = {}
+            save['size'] = self.sizevar.get()
+            save['wrapleftright'] = bool(self.leftright.get())
+            save['wrapupdown'] = bool(self.updown.get())
+            g = self.gamegrid()
+            save['board'] = [[g[j][i] for j in range(len(g))] for i in range(len(g[0]))]
+            
+            with open(cgol_path, 'w', encoding = 'UTF-8') as cgol:
+                cgol.write(json.dumps(save, separators = (',', ':')))
+                cgol.close()
+
+    def loadFile(self):
+        with open(self.filepath, 'r', encoding = 'UTF-8') as cgol:
+            data = json.loads(cgol.read())
+            try:
+                size = str(int(data['size']))
+                board = data['board']
+                board = [[board[j][i] for j in range(len(board))] for i in range(len(board[0]))]
+
+                self.width.set(len(board))
+                self.height.set(len(board[0]))
+                self.sizevar.set(size)
+
+                self.leftright.set(int(data['wrapleftright']))
+                self.updown.set(int(data['wrapupdown']))
+
+                self.setResolution()
+
+                self.gamegrid.setGrid(board)
+                self.updateGrid(compute = False)
+                self.master.title(f'{os.path.basename(os.path.normpath(self.filepath))} - Conway\'s Game of Life')
+            except Exception as e:
+                print(e)
+            
+            cgol.close()
