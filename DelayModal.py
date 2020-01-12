@@ -20,12 +20,13 @@ class DelayModal(tk.Toplevel):
     
     def close(self, e = None, m = 0):
         if m: self.output.set('-1')
-        self.master.master.wm_attributes('-disabled', False)
+        self.grab_release()
         self.destroy()
         self.master.master.wm_deiconify()
     
     def show(self):
-        self.master.master.wm_attributes('-disabled', True)
+        self.wait_visibility()
+        self.grab_set()
         self.transient(self.master)
         self.title('Choose delay between 2 generations')
         self.protocol('WM_DELETE_WINDOW', lambda: self.close(m = 1))
