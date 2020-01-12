@@ -51,16 +51,32 @@ class Application(tk.Frame):
         self.menu_file = tk.Menu(self.menu, tearoff = 0)
         self.menu.add_cascade(label = 'File', menu = self.menu_file)
 
-        self.menu_file.add_command(label = 'New File (Ctrl+N)', command = self.newFile)
+        self.menu_file.add_command(label = 'New File     (Ctrl+N)', command = self.newFile)
         self.master.bind('<Control-n>', self.newFile)
         self.menu_file.add_separator()
-        self.menu_file.add_command(label = 'Open... (Ctrl+O)', command = self.openFile)
+        self.menu_file.add_command(label = 'Open...      (Ctrl+O)', command = self.openFile)
         self.master.bind('<Control-o>', self.openFile)
         self.menu_file.add_separator()
-        self.menu_file.add_command(label = 'Save (Ctrl+S)', command = self.saveFile)
+        self.menu_file.add_command(label = 'Save         (Ctrl+S)', command = self.saveFile)
         self.master.bind('<Control-s>', self.saveFile)
-        self.menu_file.add_command(label = 'Save As... (Ctrl+Shift+S)', command = self.saveFileAs)
+        self.menu_file.add_command(label = 'Save As...   (Ctrl+Shift+S)', command = self.saveFileAs)
         self.master.bind('<Control-S>', self.saveFileAs)
+        self.menu_file.add_separator()
+
+        self.menu_examples = tk.Menu(self.menu_file, tearoff = 0)
+        self.menu_file.add_cascade(label = 'Examples', menu = self.menu_examples)
+
+        self.menu_examples.add_command(label = 'Glider', command = lambda: self.loadExample('glider'))
+        self.menu_examples.add_command(label = 'Lightweight spaceship', command = lambda: self.loadExample('lightweight-spaceship'))
+        self.menu_examples.add_separator()
+        self.menu_examples.add_command(label = 'Blinker', command = lambda: self.loadExample('oscillator-blinker'))
+        self.menu_examples.add_command(label = 'Toad', command = lambda: self.loadExample('oscillator-toad'))
+        self.menu_examples.add_command(label = 'Beacon', command = lambda: self.loadExample('oscillator-beacon'))
+        self.menu_examples.add_command(label = 'Traffic light', command = lambda: self.loadExample('oscillator-traffic-light'))
+        self.menu_examples.add_command(label = 'Pulsar', command = lambda: self.loadExample('oscillator-pulsar'))
+        self.menu_examples.add_command(label = 'Pentadecathlon', command = lambda: self.loadExample('oscillator-pentadecathlon'))
+        self.menu_examples.add_separator()
+        self.menu_examples.add_command(label = 'Gospers glider gun with eater', command = lambda: self.loadExample('gospers-glider-gun-with-eater'))
 
         self.master.config(menu = self.menu)
 
@@ -291,13 +307,22 @@ class Application(tk.Frame):
     
     def saveFile(self, e = None):
         if self.filepath:
-            # just save
-            pass
+            save = {}
+            save['size'] = self.sizevar.get()
+            save['wrapleftright'] = bool(self.leftright.get())
+            save['wrapupdown'] = bool(self.updown.get())
+            g = self.gamegrid()
+            save['board'] = [[g[j][i] for j in range(len(g))] for i in range(len(g[0]))]
+            
+            with open(self.filepath, 'w', encoding = 'UTF-8') as cgol:
+                cgol.write(json.dumps(save, separators = (',', ':')))
+                cgol.close()
         else:
             self.saveFileAs()
     
     def saveFileAs(self, e = None):
-        cgol_path = filedialog.asksaveasfilename(initialdir = os.path.abspath('.'), title = 'Save GoL board', filetypes = [('Conway\'s Game of Life save', '*.cgol')]) + '.cgol'
+        cgol_path = filedialog.asksaveasfilename(initialdir = os.path.abspath('.'), title = 'Save GoL board', filetypes = [('Conway\'s Game of Life save', '*.cgol')])
+        if not cgol_path.endswith('.cgol'): cgol_path += '.cgol'
         
         if cgol_path:   
             cgol_path = os.path.abspath(cgol_path)
@@ -340,3 +365,24 @@ class Application(tk.Frame):
                 print(e)
             
             cgol.close()
+    
+    def loadExample(self, name):
+        cgol_path = os.path.normpath(os.path.join(os.path.abspath('.'), f'examples/{name}.cgol'))
+        with open(cgol_path, 'r', encoding = 'UTF-8') as cgol:
+            data = json.loads(cgol.read())
+
+            size = str(int(data['size']))
+            board = data['board']
+            board = [[board[j][i] for j in range(len(board))] for i in range(len(board[0]))]
+
+            self.width.set(len(board))
+            self.height.set(len(board[0]))
+            self.sizevar.set(size)
+
+            self.leftright.set(int(data['wrapleftright']))
+            self.updown.set(int(data['wrapupdown']))
+
+            self.setResolution()
+
+            self.gamegrid.setGrid(board)
+            self.updateGrid(compute = False)
