@@ -21,5 +21,5 @@ Start Conway's Game of Life by running `app/__main__.py`. If everything works co
 * Make an `.exe` file
 * ~~A nice way to set a size for the squares~~
 * ~~A nice way to set a delay between generations~~
-* A nice way to change the squares' color
+* ~~A nice way to change the squares' color~~
 * ~~Option to (dis)connect left and right, and the same with up and down~~

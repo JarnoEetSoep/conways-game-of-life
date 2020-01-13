@@ -9,14 +9,19 @@ from Square import Square
 from Grid import Grid
 from DelayModal import DelayModal
 from HelpModal import HelpModal
+from SettingsModal import SettingsModal
 
 class Application(tk.Frame):
-    def __init__(self, master = None, width = 40, height = 25, size = 10, fillRandom = True, filepath = None):
+    def __init__(self, master = None, width = 40, height = 25, size = 10, filepath = None):
         super().__init__(master)
         self.master = master
         self.grid()
+
+        with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'settings.json'), 'r', encoding = 'UTF-8') as settings:
+            self.settings = json.loads(settings.read())
+            settings.close()
+
         self.size = size
-        self.fillRandom = fillRandom
         self.isPlaying = False
         self.delay = 0
         self.master.protocol('WM_DELETE_WINDOW', self.quit)
@@ -27,7 +32,7 @@ class Application(tk.Frame):
         self.filepath = filepath
         if filepath: self.loadFile()
         
-        self.create_widgets()
+        self.createWidgets()
         self.width.set(str(width))
         self.height.set(str(height))
         self.sizevar.set(str(size))
@@ -36,7 +41,7 @@ class Application(tk.Frame):
 
         self.setResolution()
 
-    def create_widgets(self):
+    def createWidgets(self):
         # Styles
         self.button_style = {'relief': 'raised', 'cursor': 'hand2'}
         self.entry_style = {'relief': 'sunken'}
@@ -77,6 +82,9 @@ class Application(tk.Frame):
         self.menu_examples.add_command(label = 'Pentadecathlon', command = lambda: self.loadExample('oscillator-pentadecathlon'))
         self.menu_examples.add_separator()
         self.menu_examples.add_command(label = 'Gospers glider gun with eater', command = lambda: self.loadExample('gospers-glider-gun-with-eater'))
+
+        self.menu_file.add_separator()
+        self.menu_file.add_command(label = 'Settings', command = self.openSettings)
 
         self.master.config(menu = self.menu)
 
@@ -216,7 +224,6 @@ class Application(tk.Frame):
         self.size = size
 
         self.squares = []
-        if self.fillRandom: gamegrid.fillRandom()
         self.gamegrid = gamegrid
         self.oldGrid = gamegrid()
 
@@ -224,7 +231,7 @@ class Application(tk.Frame):
             self.squares.append([])
 
             for j in range(len(gamegrid()[i])):
-                square = Square(self.game, self.gamegrid, i, j, gamegrid()[i][j], self.size)
+                square = Square(self.game, self.gamegrid, i, j, gamegrid()[i][j], self.size, self.settings['alive-color'], self.settings['dead-color'])
                 square.grid(row = j, column = i)
 
                 self.squares[i].append(square)
@@ -367,7 +374,7 @@ class Application(tk.Frame):
             cgol.close()
     
     def loadExample(self, name):
-        cgol_path = os.path.normpath(os.path.join(os.path.abspath('.'), f'examples/{name}.cgol'))
+        cgol_path = os.path.normpath(os.path.join(os.path.dirname(os.path.realpath(__file__)), f'examples/{name}.cgol'))
         with open(cgol_path, 'r', encoding = 'UTF-8') as cgol:
             data = json.loads(cgol.read())
 
@@ -386,3 +393,10 @@ class Application(tk.Frame):
 
             self.gamegrid.setGrid(board)
             self.updateGrid(compute = False)
+    
+    def openSettings(self):
+        self.settings = SettingsModal(self).show()
+
+        for i in range(len(self.gamegrid())):
+            for j in range(len(self.gamegrid()[0])):
+                self.squares[i][j].setColors(self.settings['alive-color'], self.settings['dead-color'])

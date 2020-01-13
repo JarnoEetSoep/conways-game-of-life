@@ -11,6 +11,6 @@ size = 110      # 20
 
 root.title('Conway\'s Game of Life')
 
-app = Application(master = root, width = width, height = height, size = size, fillRandom = False)
+app = Application(master = root, width = width, height = height, size = size)
 
 app.mainloop()
