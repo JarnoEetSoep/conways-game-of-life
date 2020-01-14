@@ -71,17 +71,30 @@ class Application(tk.Frame):
         self.menu_examples = tk.Menu(self.menu_file, tearoff = 0)
         self.menu_file.add_cascade(label = 'Examples', menu = self.menu_examples)
 
-        self.menu_examples.add_command(label = 'Glider', command = lambda: self.loadExample('glider'))
-        self.menu_examples.add_command(label = 'Lightweight spaceship', command = lambda: self.loadExample('lightweight-spaceship'))
+        self.menu_examples.add_command(label = 'Glider', command = lambda: self.loadFile(File = os.path.normpath(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'examples', 'spaceships', 'glider.cgol'))))
+        self.menu_examples.add_command(label = 'Big glider', command = lambda: self.loadFile(File = os.path.normpath(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'examples', 'spaceships', 'big-glider.cgol'))))
+        self.menu_examples.add_command(label = 'Lightweight spaceship', command = lambda: self.loadFile(File = os.path.normpath(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'examples', 'spaceships', 'lightweight-spaceship.cgol'))))
+        self.menu_examples.add_command(label = 'Middleweight spaceship', command = lambda: self.loadFile(File = os.path.normpath(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'examples', 'spaceships', 'middleweight-spaceship.cgol'))))
+        self.menu_examples.add_command(label = 'Heavyweight spaceship', command = lambda: self.loadFile(File = os.path.normpath(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'examples', 'spaceships', 'heavyweight-spaceship.cgol'))))
+        self.menu_examples.add_command(label = 'Spider', command = lambda: self.loadFile(File = os.path.normpath(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'examples', 'spaceships', 'spider.cgol'))))
+        self.menu_examples.add_command(label = 'Weekender', command = lambda: self.loadFile(File = os.path.normpath(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'examples', 'spaceships', 'weekender.cgol'))))
+
         self.menu_examples.add_separator()
-        self.menu_examples.add_command(label = 'Blinker', command = lambda: self.loadExample('oscillator-blinker'))
-        self.menu_examples.add_command(label = 'Toad', command = lambda: self.loadExample('oscillator-toad'))
-        self.menu_examples.add_command(label = 'Beacon', command = lambda: self.loadExample('oscillator-beacon'))
-        self.menu_examples.add_command(label = 'Traffic light', command = lambda: self.loadExample('oscillator-traffic-light'))
-        self.menu_examples.add_command(label = 'Pulsar', command = lambda: self.loadExample('oscillator-pulsar'))
-        self.menu_examples.add_command(label = 'Pentadecathlon', command = lambda: self.loadExample('oscillator-pentadecathlon'))
+
+        self.menu_examples.add_command(label = 'Blinker', command = lambda: self.loadFile(File = os.path.normpath(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'examples', 'oscillators', 'blinker.cgol'))))
+        self.menu_examples.add_command(label = 'Toad', command = lambda: self.loadFile(File = os.path.normpath(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'examples', 'oscillators', 'toad.cgol'))))
+        self.menu_examples.add_command(label = 'Beacon', command = lambda: self.loadFile(File = os.path.normpath(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'examples', 'oscillators', 'beacon.cgol'))))
+        self.menu_examples.add_command(label = 'Traffic light', command = lambda: self.loadFile(File = os.path.normpath(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'examples', 'oscillators', 'traffic-light.cgol'))))
+        self.menu_examples.add_command(label = 'Pulsar', command = lambda: self.loadFile(File = os.path.normpath(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'examples', 'oscillators', 'pulsar.cgol'))))
+        self.menu_examples.add_command(label = 'Pentadecathlon', command = lambda: self.loadFile(File = os.path.normpath(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'examples', 'oscillators', 'pentadecathlon.cgol'))))
+
         self.menu_examples.add_separator()
-        self.menu_examples.add_command(label = 'Gospers glider gun with eater', command = lambda: self.loadExample('gospers-glider-gun-with-eater'))
+
+        self.menu_examples.add_command(label = 'R-Pentomino', command = lambda: self.loadFile(File = os.path.normpath(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'examples', 'methelusas', 'r-pentomino.cgol'))))
+
+        self.menu_examples.add_separator()
+
+        self.menu_examples.add_command(label = 'Gospers glider gun with eater', command = lambda: self.loadFile(File = os.path.normpath(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'examples', 'misc', 'gospers-glider-gun-with-eater.cgol'))))
 
         self.menu_file.add_separator()
         self.menu_file.add_command(label = 'Settings', command = self.openSettings)
@@ -235,6 +248,8 @@ class Application(tk.Frame):
                 square.grid(row = j, column = i)
 
                 self.squares[i].append(square)
+        
+        self.update()
     
     def updateGrid(self, compute = True):
         if compute:
@@ -329,9 +344,9 @@ class Application(tk.Frame):
     
     def saveFileAs(self, e = None):
         cgol_path = filedialog.asksaveasfilename(initialdir = os.path.abspath('.'), title = 'Save GoL board', filetypes = [('Conway\'s Game of Life save', '*.cgol')])
-        if not cgol_path.endswith('.cgol'): cgol_path += '.cgol'
         
-        if cgol_path:   
+        if cgol_path:  
+            if not cgol_path.endswith('.cgol'): cgol_path += '.cgol' 
             cgol_path = os.path.abspath(cgol_path)
             self.filepath = cgol_path
 
@@ -348,8 +363,9 @@ class Application(tk.Frame):
                 cgol.write(json.dumps(save, separators = (',', ':')))
                 cgol.close()
 
-    def loadFile(self):
-        with open(self.filepath, 'r', encoding = 'UTF-8') as cgol:
+    def loadFile(self, File = None):
+        path = File if File else self.filepath
+        with open(path, 'r', encoding = 'UTF-8') as cgol:
             data = json.loads(cgol.read())
             try:
                 size = str(int(data['size']))
@@ -367,32 +383,11 @@ class Application(tk.Frame):
 
                 self.gamegrid.setGrid(board)
                 self.updateGrid(compute = False)
-                self.master.title(f'{os.path.basename(os.path.normpath(self.filepath))} - Conway\'s Game of Life')
+                if File != None: self.master.title(f'{os.path.basename(os.path.normpath(self.filepath))} - Conway\'s Game of Life')
             except Exception as e:
                 print(e)
             
             cgol.close()
-    
-    def loadExample(self, name):
-        cgol_path = os.path.normpath(os.path.join(os.path.dirname(os.path.realpath(__file__)), f'examples/{name}.cgol'))
-        with open(cgol_path, 'r', encoding = 'UTF-8') as cgol:
-            data = json.loads(cgol.read())
-
-            size = str(int(data['size']))
-            board = data['board']
-            board = [[board[j][i] for j in range(len(board))] for i in range(len(board[0]))]
-
-            self.width.set(len(board))
-            self.height.set(len(board[0]))
-            self.sizevar.set(size)
-
-            self.leftright.set(int(data['wrapleftright']))
-            self.updown.set(int(data['wrapupdown']))
-
-            self.setResolution()
-
-            self.gamegrid.setGrid(board)
-            self.updateGrid(compute = False)
     
     def openSettings(self):
         self.settings = SettingsModal(self).show()
