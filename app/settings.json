@@ -1,4 +1,10 @@
 {
     "alive-color": "#000000",
-    "dead-color": "#ffffff"
+    "dead-color": "#ffffff",
+    "rules": [
+        "cell dies if cell is alive and neighborsalive < 2",
+        "cell dies if cell is alive and neighborsalive > 2",
+        "cell lives if cell is alive and neighborsalive between 2 and 3",
+        "cell lives if cell is dead and neighborsalive = 3"
+    ]
 }

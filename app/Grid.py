@@ -15,7 +15,7 @@ class Grid:
         
         self.arr = newGrid
     
-    def computeNextGen(self, updown, leftright):
+    def computeNextGen(self, updown, leftright, rules):
         newGrid = [[0] * self.rows for i in range(self.cols)]
 
         for i in range(len(self.arr)):
@@ -24,18 +24,27 @@ class Grid:
                 cell = self.arr[i][j]
 
                 # Rules
-                if cell == 1 and neighbors < 2:
-                    # A live cell with fewer than 2 live neighbors dies
-                    newGrid[i][j] = 0
-                elif cell == 1 and neighbors > 3:
-                    # A live cell with more than 3 live neighbors dies
-                    newGrid[i][j] = 0
-                elif cell == 1 and 1 < neighbors < 4:
-                    # A live cell with 2 or 3 live neighbors still lives
-                    newGrid[i][j] = 1
-                elif cell == 0 and neighbors == 3:
-                    # A dead cell with 3 live neighbors comes to life
-                    newGrid[i][j] = 1
+                for rule in rules:
+                    lives_or_dies = 0 if rule.split(' ')[1] == 'dies' else 1
+                    alive_or_dead = 0 if rule.split(' ')[5] == 'dead' else 1
+                    operator = rule.split(' ')[8]
+                    condition_number = int(rule.split(' ')[9])
+                    condition_number2 = -1
+                    if len(rule.split(' ')) > 11:
+                        condition_number2 = int(rule.split(' ')[11])
+                    
+                    if operator == '=':
+                        if cell == alive_or_dead and neighbors == condition_number:
+                            newGrid[i][j] = lives_or_dies
+                    elif operator == '>':
+                        if cell == alive_or_dead and neighbors > condition_number:
+                            newGrid[i][j] = lives_or_dies
+                    elif operator == '<':
+                        if cell == alive_or_dead and neighbors < condition_number:
+                            newGrid[i][j] = lives_or_dies
+                    elif operator == 'between':
+                        if cell == alive_or_dead and condition_number <= neighbors <= condition_number2:
+                            newGrid[i][j] = lives_or_dies
         
         self.arr = newGrid
         self.generation += 1
