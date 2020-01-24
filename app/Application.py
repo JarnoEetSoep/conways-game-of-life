@@ -132,8 +132,10 @@ class Application(tk.Frame):
         self.set_resolution.grid(row = 0, column = 2, sticky = tk.E, ipady = 7, ipadx = 10)
 
         # Second row (game)
-        self.game = tk.Frame(self)
-        self.game.grid(row = 1, column = 0, columnspan = 2, sticky = tk.N + tk.W)
+        self.game_container = tk.Frame(self)
+        self.game_container.grid(row = 1, column = 0, columnspan = 2, sticky = tk.N + tk.W)
+        self.game = tk.Canvas(self.game_container, cursor = 'hand2')
+        self.game.grid(row = 0, column = 0, sticky = tk.N + tk.W)
 
         # Third row (player controls)
         self.player_group = tk.Frame(self)
@@ -202,51 +204,33 @@ class Application(tk.Frame):
         else:
             return True
     
-    def setResolution(self, e = None):   # pylint: disable=E0202
-        if self.width.get() == '' or int(self.width.get()) < 1:
-            width = int(self.game.winfo_width() / self.size)
-            self.width.set(str(width))
-        else:
-            width = int(self.width_entry.get())
+    def setResolution(self, e = None):
+        if self.width.get() != '' and int(self.width.get()) > 0:
+            if self.height.get() != '' and int(self.height.get()) > 0:
+                if self.sizevar.get() != '' and int(self.sizevar.get()) > 0:
+                    width = int(self.width_entry.get())
+                    height = int(self.height_entry.get())
+                    self.size = int(self.size_entry.get())
 
-        if self.height.get() == '' or int(self.height.get()) < 1:
-            height = int(self.game.winfo_height() / self.size)
-            self.height.set(str(height))
-        else:
-            height = int(self.height_entry.get())
-        
-        if self.sizevar.get() == '' or int(self.sizevar.get()) < 1:
-            self.size.set(str(width))
-        else:
-            self.size = int(self.size_entry.get())
-        
-        self.game.config(height = height * self.size, width = width * self.size)
+                    self.setGrid(Grid(height, width), size = self.size)
+                    self.game.config(height = height * self.size + 1, width = width * self.size + 1)
 
-        winwidth = 805 / self.size if width * self.size < 805 else width
-        self.master.geometry(f'{int(winwidth * self.size)}x{height * self.size + 93}')
-        self.help_bar_h.config(width = winwidth * self.size)
+                    self.help_bar_h.config(width = width * self.size + 1)
 
-        self.setGrid(Grid(height, width), size = self.size)
-
-    def setGrid(self, gamegrid, size = 0):
-        self.game.destroy()
-        self.game = tk.Frame(self, width = int(self.width_entry.get()) * self.size, height = int(self.height_entry.get()) * self.size)
-        self.game.grid(row = 1, column = 0, columnspan = 2, sticky = tk.N + tk.W)
+    def setGrid(self, gamegrid, size = 1):
+        self.game.delete('all')
 
         if size == 0: size = self.size
         self.size = size
-
-        self.squares = []
         self.gamegrid = gamegrid
         self.oldGrid = gamegrid()
+        self.squares = []
 
         for i in range(len(gamegrid())):
             self.squares.append([])
-
             for j in range(len(gamegrid()[i])):
-                square = Square(self.game, self.gamegrid, i, j, gamegrid()[i][j], self.size, self.settings['alive-color'], self.settings['dead-color'])
-                square.grid(row = j, column = i)
-
+                ID = self.game.create_rectangle(2 + i * size, 2 + j * size, 2 + i * size + size, 2 + j * size + size, outline = '#808080', tag = f'{i},{j}')
+                square = Square(self.gamegrid, self.game, ID, i, j, self.gamegrid()[i][j], self.settings['alive-color'], self.settings['dead-color'])
                 self.squares[i].append(square)
         
         self.update()
@@ -256,14 +240,19 @@ class Application(tk.Frame):
             self.oldGrid = self.gamegrid()
             self.gamegrid.computeNextGen(bool(self.updown.get()), bool(self.leftright.get()), self.settings['rules'])
         
+        #self.game.delete('all')
         self.generation_label.config(text = f'Generation: {self.gamegrid.generation}')
         for i in range(len(self.gamegrid())):
             for j in range(len(self.gamegrid()[0])):
                 if self.oldGrid[i][j] != self.gamegrid()[i][j]:
                     newState = self.gamegrid()[i][j]
                     self.squares[i][j].setState(newState)
+                #color = self.settings['alive-color'] if self.gamegrid()[i][j] == 1 else self.settings['dead-color']
+                #x=self.game.create_rectangle(2 + i * self.size, 2 + j * self.size, 2 + i * self.size + self.size, 2 + j * self.size + self.size, fill = color, outline = '#808080')
+                #print(x)
         
         if self.oldGrid == self.gamegrid(): self.isPlaying = False
+        self.game.update()
     
     def _playGame(self):
         if self.isPlaying:
@@ -395,3 +384,19 @@ class Application(tk.Frame):
         for i in range(len(self.gamegrid())):
             for j in range(len(self.gamegrid()[0])):
                 self.squares[i][j].setColors(self.settings['alive-color'], self.settings['dead-color'])
+
+if __name__ == "__main__":
+    root = tk.Tk()
+
+    root.resizable(1, 1)
+    root.geometry('900x700+50+50')
+
+    width = 8       # 40
+    height = 5      # 25
+    size = 110      # 20
+
+    root.title('Conway\'s Game of Life')
+
+    app = Application(master = root, width = width, height = height, size = size)
+
+    app.mainloop()
