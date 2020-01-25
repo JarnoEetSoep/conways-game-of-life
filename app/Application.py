@@ -149,7 +149,9 @@ class Application(tk.Frame):
         self.game_scrollbar_v.grid(row = 0, column = 1, sticky = tk.N + tk.S)
 
         self.game = tk.Canvas(self.game_container, cursor = 'hand2', bd = 0, xscrollcommand = self.game_scrollbar_h.set, yscrollcommand = self.game_scrollbar_v.set)
-        self.game.grid(row = 0, column = 0, sticky = tk.N + tk.W)
+        self.game.grid_rowconfigure(0, weight = 1)
+        self.game.columnconfigure(0, weight = 1)
+        self.game.grid(row = 0, column = 0, sticky = tk.N + tk.W + tk.E + tk.S)
 
         self.game_scrollbar_h.config(command = self.game.xview)
         self.game_scrollbar_v.config(command = self.game.yview)
@@ -230,9 +232,8 @@ class Application(tk.Frame):
                     self.size = int(self.size_entry.get())
 
                     self.setGrid(Grid(height, width), size = self.size)
-                    self.game.config(height = height * self.size + 1, width = width * self.size + 1)
 
-                    self.game.config(scrollregion = (0, 0, width * self.size + 1, height * self.size + 1))
+                    self.game.config(scrollregion = (0, 0, width * self.size, height * self.size))
 
     def setGrid(self, gamegrid, size = 1):
         self.game.delete('all')
@@ -246,7 +247,7 @@ class Application(tk.Frame):
         for i in range(len(gamegrid())):
             self.squares.append([])
             for j in range(len(gamegrid()[i])):
-                ID = self.game.create_rectangle(2 + i * size, 2 + j * size, 2 + i * size + size, 2 + j * size + size, outline = '#808080', tag = f'{i},{j}')
+                ID = self.game.create_rectangle(i * size, j * size, i * size + size, j * size + size, outline = '#808080', tag = f'{i},{j}')
                 square = Square(self.gamegrid, self.game, ID, i, j, self.gamegrid()[i][j], self.settings['alive-color'], self.settings['dead-color'])
                 self.squares[i].append(square)
         
@@ -385,7 +386,7 @@ class Application(tk.Frame):
 
                 self.gamegrid.setGrid(board)
                 self.updateGrid(compute = False)
-                if File != None: self.master.title(f'{os.path.basename(os.path.normpath(self.filepath))} - Conway\'s Game of Life')
+                if File == None: self.master.title(f'{os.path.basename(os.path.normpath(self.filepath))} - Conway\'s Game of Life')
             except Exception as e:
                 print(e)
             
