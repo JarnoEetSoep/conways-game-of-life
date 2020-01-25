@@ -229,11 +229,11 @@ class Application(tk.Frame):
                 width = int(self.width_entry.get())
                 height = int(self.height_entry.get())
 
-                self.setGrid(Grid(height, width), size = 20)
+                self.setGrid(Grid(height, width))
 
                 self.game.config(scrollregion = self.game.bbox('all'))
 
-    def setGrid(self, gamegrid, size = 1):
+    def setGrid(self, gamegrid):
         self.game.delete('all')
 
         self.gamegrid = gamegrid
@@ -243,7 +243,7 @@ class Application(tk.Frame):
         for i in range(len(gamegrid())):
             self.squares.append([])
             for j in range(len(gamegrid()[i])):
-                ID = self.game.create_rectangle(i * size, j * size, i * size + size, j * size + size, outline = '#808080', tag = f'{i},{j}')
+                ID = self.game.create_rectangle(i * 20, j * 20, i * 20 + 20, j * 20 + 20, outline = '#808080', tag = f'{i},{j}')
                 square = Square(self.gamegrid, self.game, ID, i, j, self.gamegrid()[i][j], self.settings['alive-color'], self.settings['dead-color'])
                 self.squares[i].append(square)
         
