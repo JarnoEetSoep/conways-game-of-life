@@ -15,36 +15,18 @@ class Grid:
         
         self.arr = newGrid
     
-    def computeNextGen(self, updown, leftright, rules):
+    def computeNextGen(self, updown, leftright, rule):
         newGrid = [[0] * self.rows for i in range(self.cols)]
+        b = rule.split('s')[0][1:]
+        s = rule.split('s')[1]
 
         for i in range(len(self.arr)):
             for j in range(len(self.arr[0])):
-                neighbors = self.sumNeighbors(i, j, updown, leftright)
+                neighbors = str(self.sumNeighbors(i, j, updown, leftright))
                 cell = self.arr[i][j]
 
-                # Rules
-                for rule in rules:
-                    lives_or_dies = 0 if rule.split(' ')[1] == 'dies' else 1
-                    alive_or_dead = 0 if rule.split(' ')[5] == 'dead' else 1
-                    operator = rule.split(' ')[8]
-                    condition_number = int(rule.split(' ')[9])
-                    condition_number2 = -1
-                    if len(rule.split(' ')) > 11:
-                        condition_number2 = int(rule.split(' ')[11])
-                    
-                    if operator == '=':
-                        if cell == alive_or_dead and neighbors == condition_number:
-                            newGrid[i][j] = lives_or_dies
-                    elif operator == '>':
-                        if cell == alive_or_dead and neighbors > condition_number:
-                            newGrid[i][j] = lives_or_dies
-                    elif operator == '<':
-                        if cell == alive_or_dead and neighbors < condition_number:
-                            newGrid[i][j] = lives_or_dies
-                    elif operator == 'between':
-                        if cell == alive_or_dead and condition_number <= neighbors <= condition_number2:
-                            newGrid[i][j] = lives_or_dies
+                if (neighbors in b and cell == 0) or (neighbors in s and cell == 1):
+                    newGrid[i][j] = 1
         
         self.arr = newGrid
         self.generation += 1

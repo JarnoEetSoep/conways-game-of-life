@@ -254,7 +254,7 @@ class Application(tk.Frame):
     def updateGrid(self, compute = True):
         if compute:
             self.oldGrid = self.gamegrid()
-            self.gamegrid.computeNextGen(bool(self.updown.get()), bool(self.leftright.get()), self.settings['rules'])
+            self.gamegrid.computeNextGen(bool(self.updown.get()), bool(self.leftright.get()), self.settings['rule'])
         
         self.generation_label.config(text = f'Generation: {self.gamegrid.generation}')
         for i in range(len(self.gamegrid())):
