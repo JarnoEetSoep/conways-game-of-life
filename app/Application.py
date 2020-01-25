@@ -15,7 +15,7 @@ class Application(tk.Frame):
     def __init__(self, master = None, width = 40, height = 25, size = 10, filepath = None):
         super().__init__(master)
         self.master = master
-        self.grid()
+        self.place(x = 0, y = 0, relwidth = 1, relheight = 1)
 
         with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'settings.json'), 'r', encoding = 'UTF-8') as settings:
             self.settings = json.loads(settings.read())
@@ -31,6 +31,10 @@ class Application(tk.Frame):
 
         self.filepath = filepath
         if filepath: self.loadFile()
+
+        self.is_fullscreen = True
+        self.master.bind('<F11>', lambda e: self.fullscreen('toggle'))
+        self.master.bind('<Escape>', lambda e: self.fullscreen('off'))
         
         self.createWidgets()
         self.width.set(str(width))
@@ -47,9 +51,9 @@ class Application(tk.Frame):
         self.entry_style = {'relief': 'sunken'}
         self.checkbutton_style = {'font': ('Verdana', 10)}
 
-        # Help row
-        self.help_bar_h = tk.Frame(self, width = 35 * self.size, height = 0)
-        self.help_bar_h.grid(row = 0, column = 0, sticky = tk.N + tk.W, columnspan = 2)
+        # Grid configure
+        self.grid_rowconfigure(1, weight = 1)
+        self.grid_columnconfigure(1, weight = 1)
 
         # Top menu
         self.menu = tk.Menu(self.master)
@@ -133,9 +137,21 @@ class Application(tk.Frame):
 
         # Second row (game)
         self.game_container = tk.Frame(self)
-        self.game_container.grid(row = 1, column = 0, columnspan = 2, sticky = tk.N + tk.W)
-        self.game = tk.Canvas(self.game_container, cursor = 'hand2')
+        self.game_container.grid_rowconfigure(0, weight = 1)
+        self.game_container.columnconfigure(0, weight = 1)
+        self.game_container.grid(row = 1, column = 0, columnspan = 2, sticky = tk.N + tk.E + tk.S + tk.W)
+
+        self.game_scrollbar_h = tk.Scrollbar(self.game_container, orient = tk.HORIZONTAL)
+        self.game_scrollbar_h.grid(row = 1, column = 0, sticky = tk.W + tk.E)
+
+        self.game_scrollbar_v = tk.Scrollbar(self.game_container, orient = tk.VERTICAL)
+        self.game_scrollbar_v.grid(row = 0, column = 1, sticky = tk.N + tk.S)
+
+        self.game = tk.Canvas(self.game_container, cursor = 'hand2', bd = 0, xscrollcommand = self.game_scrollbar_h.set, yscrollcommand = self.game_scrollbar_v.set)
         self.game.grid(row = 0, column = 0, sticky = tk.N + tk.W)
+
+        self.game_scrollbar_h.config(command = self.game.xview)
+        self.game_scrollbar_v.config(command = self.game.yview)
 
         # Third row (player controls)
         self.player_group = tk.Frame(self)
@@ -185,9 +201,9 @@ class Application(tk.Frame):
 
         self.quit_btn.image = self.quit_icon
 
-        self.gen_and_quit.grid(row = 2, column = 1, sticky = tk.E + tk.N + tk.S)
-        self.generation_label.grid(row = 2, column = 0, sticky = tk.E + tk.N + tk.S)
-        self.quit_btn.grid(row = 2, column = 1, sticky = tk.E + tk.N + tk.S)
+        self.gen_and_quit.grid(row = 2, column = 1, sticky = tk.E)
+        self.generation_label.grid(row = 0, column = 0, sticky = tk.E)
+        self.quit_btn.grid(row = 0, column = 1, sticky = tk.E)
 
         # Help modal
         self.helpModal = None
@@ -215,7 +231,7 @@ class Application(tk.Frame):
                     self.setGrid(Grid(height, width), size = self.size)
                     self.game.config(height = height * self.size + 1, width = width * self.size + 1)
 
-                    self.help_bar_h.config(width = width * self.size + 1)
+                    self.game.config(scrollregion = (0, 0, width * self.size + 1, height * self.size + 1))
 
     def setGrid(self, gamegrid, size = 1):
         self.game.delete('all')
@@ -240,16 +256,12 @@ class Application(tk.Frame):
             self.oldGrid = self.gamegrid()
             self.gamegrid.computeNextGen(bool(self.updown.get()), bool(self.leftright.get()), self.settings['rules'])
         
-        #self.game.delete('all')
         self.generation_label.config(text = f'Generation: {self.gamegrid.generation}')
         for i in range(len(self.gamegrid())):
             for j in range(len(self.gamegrid()[0])):
                 if self.oldGrid[i][j] != self.gamegrid()[i][j]:
                     newState = self.gamegrid()[i][j]
                     self.squares[i][j].setState(newState)
-                #color = self.settings['alive-color'] if self.gamegrid()[i][j] == 1 else self.settings['dead-color']
-                #x=self.game.create_rectangle(2 + i * self.size, 2 + j * self.size, 2 + i * self.size + self.size, 2 + j * self.size + self.size, fill = color, outline = '#808080')
-                #print(x)
         
         if self.oldGrid == self.gamegrid(): self.isPlaying = False
         self.game.update()
@@ -384,19 +396,11 @@ class Application(tk.Frame):
         for i in range(len(self.gamegrid())):
             for j in range(len(self.gamegrid()[0])):
                 self.squares[i][j].setColors(self.settings['alive-color'], self.settings['dead-color'])
-
-if __name__ == "__main__":
-    root = tk.Tk()
-
-    root.resizable(1, 1)
-    root.geometry('900x700+50+50')
-
-    width = 8       # 40
-    height = 5      # 25
-    size = 110      # 20
-
-    root.title('Conway\'s Game of Life')
-
-    app = Application(master = root, width = width, height = height, size = size)
-
-    app.mainloop()
+    
+    def fullscreen(self, mode):
+        if mode == 'toggle':
+            self.is_fullscreen = not self.is_fullscreen
+            self.master.attributes('-fullscreen', self.is_fullscreen)
+        elif mode == 'off':
+            self.is_fullscreen = False
+            self.master.attributes('-fullscreen', False)
