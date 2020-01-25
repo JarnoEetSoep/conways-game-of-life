@@ -39,10 +39,9 @@ root.geometry('950x700+50+50')
 
 width = 40
 height = 25
-size = 30
 
 root.title('Conway\'s Game of Life')
 
-app = Application(master = root, width = width, height = height, size = size, filepath = cgol_path)
+app = Application(master = root, width = width, height = height, filepath = cgol_path)
 
 app.mainloop()

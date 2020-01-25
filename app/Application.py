@@ -12,7 +12,7 @@ from HelpModal import HelpModal
 from SettingsModal import SettingsModal
 
 class Application(tk.Frame):
-    def __init__(self, master = None, width = 40, height = 25, size = 10, filepath = None):
+    def __init__(self, master = None, width = 40, height = 25, filepath = None):
         super().__init__(master)
         self.master = master
         self.place(x = 0, y = 0, relwidth = 1, relheight = 1)
@@ -21,7 +21,6 @@ class Application(tk.Frame):
             self.settings = json.loads(settings.read())
             settings.close()
 
-        self.size = size
         self.isPlaying = False
         self.delay = 0
         self.master.protocol('WM_DELETE_WINDOW', self.quit)
@@ -36,7 +35,6 @@ class Application(tk.Frame):
         self.createWidgets()
         self.width.set(str(width))
         self.height.set(str(height))
-        self.sizevar.set(str(size))
 
         self.master.update()
 
@@ -108,33 +106,25 @@ class Application(tk.Frame):
 
         # First row (resolution controls)
         self.resolution_group = tk.Frame(self)
-        self.size_and_set_group = tk.Frame(self)
 
         self.only_digits = (self.register(self.onValidate), '%d', '%i', '%P', '%s', '%S', '%v', '%V', '%W')
 
         self.width = tk.StringVar()
         self.height = tk.StringVar()
-        self.sizevar = tk.StringVar()
 
         self.width_entry = tk.Entry(self.resolution_group, textvariable = self.width, validate = 'key', validatecommand = self.only_digits, font = ('Verdana', 20), width = 5, cnf = self.entry_style)
         self.width_entry.bind('<Return>', self.setResolution)
         self.x_label = tk.Label(self.resolution_group, text = 'x', font = ('Verdana', 20))
         self.height_entry = tk.Entry(self.resolution_group, textvariable = self.height, validate = 'key', validatecommand = self.only_digits, font = ('Verdana', 20), width = 5, cnf = self.entry_style)
         self.height_entry.bind('<Return>', self.setResolution)
-        self.size_label = tk.Label(self.size_and_set_group, text = 'Square size: ', font = ('Verdana', 10))
-        self.size_entry = tk.Entry(self.size_and_set_group, textvariable = self.sizevar, validate = 'key', validatecommand = self.only_digits, font = ('Verdana', 20), width = 5, cnf = self.entry_style)
-        self.size_entry.bind('<Return>', self.setResolution)
-        self.set_resolution = tk.Button(self.size_and_set_group, text = 'Set resolution', command = self.setResolution, font = ('Verdana', 8), cnf = self.button_style)
+        self.set_resolution = tk.Button(self, text = 'Set resolution', command = self.setResolution, font = ('Verdana', 8), cnf = self.button_style)
 
         self.resolution_group.grid(row = 0, column = 0, sticky = tk.W)
         self.width_entry.grid(row = 0, column = 0, sticky = tk.W)
         self.x_label.grid(row = 0, column = 1, sticky = tk.W)
         self.height_entry.grid(row = 0, column = 2, sticky = tk.W)
 
-        self.size_and_set_group.grid(row = 0, column = 1, sticky = tk.E)
-        self.size_label.grid(row = 0, column = 0, sticky = tk.E)
-        self.size_entry.grid(row = 0, column = 1, sticky = tk.E)
-        self.set_resolution.grid(row = 0, column = 2, sticky = tk.E, ipady = 7, ipadx = 10)
+        self.set_resolution.grid(row = 0, column = 1, sticky = tk.E, ipady = 7, ipadx = 10)
 
         # Second row (game)
         self.game_container = tk.Frame(self)
@@ -149,9 +139,19 @@ class Application(tk.Frame):
         self.game_scrollbar_v.grid(row = 0, column = 1, sticky = tk.N + tk.S)
 
         self.game = tk.Canvas(self.game_container, cursor = 'hand2', bd = 0, xscrollcommand = self.game_scrollbar_h.set, yscrollcommand = self.game_scrollbar_v.set)
-        self.game.grid_rowconfigure(0, weight = 1)
-        self.game.columnconfigure(0, weight = 1)
         self.game.grid(row = 0, column = 0, sticky = tk.N + tk.W + tk.E + tk.S)
+
+        self.game.bind('<Shift-MouseWheel>', lambda e: self.game.xview_scroll(int(e.delta / 120), 'units'))
+        self.game.bind('<Shift-Button-4>', lambda e: self.game.xview_scroll(int(e.delta / 120), 'units'))
+        self.game.bind('<Shift-Button-5>', lambda e: self.game.xview_scroll(int(e.delta / 120), 'units'))
+
+        self.game.bind('<MouseWheel>', lambda e: self.game.yview_scroll(-int(e.delta / 120), 'units'))
+        self.game.bind('<Button-4>', lambda e: self.game.yview_scroll(-int(e.delta / 120), 'units'))
+        self.game.bind('<Button-5>', lambda e: self.game.yview_scroll(-int(e.delta / 120), 'units'))
+
+        self.game.bind('<Control-MouseWheel>', self.zoomGame)
+        self.game.bind('<Control-Button-4>', self.zoomGame)
+        self.game.bind('<Control-Button-5>', self.zoomGame)
 
         self.game_scrollbar_h.config(command = self.game.xview)
         self.game_scrollbar_v.config(command = self.game.yview)
@@ -226,20 +226,16 @@ class Application(tk.Frame):
     def setResolution(self, e = None):
         if self.width.get() != '' and int(self.width.get()) > 0:
             if self.height.get() != '' and int(self.height.get()) > 0:
-                if self.sizevar.get() != '' and int(self.sizevar.get()) > 0:
-                    width = int(self.width_entry.get())
-                    height = int(self.height_entry.get())
-                    self.size = int(self.size_entry.get())
+                width = int(self.width_entry.get())
+                height = int(self.height_entry.get())
 
-                    self.setGrid(Grid(height, width), size = self.size)
+                self.setGrid(Grid(height, width), size = 20)
 
-                    self.game.config(scrollregion = (0, 0, width * self.size, height * self.size))
+                self.game.config(scrollregion = self.game.bbox('all'))
 
     def setGrid(self, gamegrid, size = 1):
         self.game.delete('all')
 
-        if size == 0: size = self.size
-        self.size = size
         self.gamegrid = gamegrid
         self.oldGrid = gamegrid()
         self.squares = []
@@ -333,7 +329,6 @@ class Application(tk.Frame):
     def saveFile(self, e = None):
         if self.filepath:
             save = {}
-            save['size'] = self.sizevar.get()
             save['wrapleftright'] = bool(self.leftright.get())
             save['wrapupdown'] = bool(self.updown.get())
             g = self.gamegrid()
@@ -356,7 +351,6 @@ class Application(tk.Frame):
             self.master.title(f'{os.path.basename(os.path.normpath(self.filepath))} - Conway\'s Game of Life')
 
             save = {}
-            save['size'] = self.sizevar.get()
             save['wrapleftright'] = bool(self.leftright.get())
             save['wrapupdown'] = bool(self.updown.get())
             g = self.gamegrid()
@@ -371,13 +365,11 @@ class Application(tk.Frame):
         with open(path, 'r', encoding = 'UTF-8') as cgol:
             data = json.loads(cgol.read())
             try:
-                size = str(int(data['size']))
                 board = data['board']
                 board = [[board[j][i] for j in range(len(board))] for i in range(len(board[0]))]
 
                 self.width.set(len(board))
                 self.height.set(len(board[0]))
-                self.sizevar.set(size)
 
                 self.leftright.set(int(data['wrapleftright']))
                 self.updown.set(int(data['wrapupdown']))
@@ -406,3 +398,11 @@ class Application(tk.Frame):
         elif mode == 'off':
             self.is_fullscreen = False
             self.master.attributes('-fullscreen', False)
+    
+    def zoomGame(self, e):
+        if e.num == 4 or e.delta > 0:
+            self.game.scale('all', e.x, e.y, 1.1, 1.1)
+        elif e.num == 5 or e.delta < 0:
+            self.game.scale('all', e.x, e.y, 0.9, 0.9)
+        
+        self.game.config(scrollregion = self.game.bbox('all'))
