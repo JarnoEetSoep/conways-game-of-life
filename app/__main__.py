@@ -21,6 +21,7 @@ if args.file:
 
         with open(cgol_path, 'r', encoding = 'UTF-8') as cgol_file:
             json.loads(cgol_file.read())
+            cgol_file.close()
 
     except OSError:
         print('Wrong file path')
