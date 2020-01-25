@@ -3,9 +3,14 @@ import tkinter as tk
 class HelpModal(tk.Toplevel):
     def __init__(self, master):
         super().__init__(master)
-
         self.container = tk.Frame(self)
-        self.manual = tk.Text(self.container, font = ('Verdana', 10), height = 37, width = 49)
+
+        self.scrollbar = tk.Scrollbar(self.container)
+        self.scrollbar.grid(row = 0, column = 1, sticky = tk.N + tk.S + tk.E)
+
+        self.manual = tk.Text(self.container, font = ('Verdana', 10), height = 37, width = 47, wrap = tk.WORD, yscrollcommand = self.scrollbar.set)
+
+        self.scrollbar.config(command = self.manual.yview)
 
         # Manual
         self.manual.insert(tk.END, 'Manual:\n\nComing Soon')
