@@ -29,9 +29,6 @@ class Application(tk.Frame):
         
         self.updateGridThread = Thread(self, self.delay, self._playGame)
 
-        self.filepath = filepath
-        if filepath: self.loadFile()
-
         self.is_fullscreen = True
         self.master.bind('<F11>', lambda e: self.fullscreen('toggle'))
         self.master.bind('<Escape>', lambda e: self.fullscreen('off'))
@@ -43,7 +40,11 @@ class Application(tk.Frame):
 
         self.master.update()
 
-        self.setResolution()
+        self.filepath = filepath
+        if filepath:
+            self.loadFile()
+        else:
+            self.setResolution()
 
     def createWidgets(self):
         # Styles
