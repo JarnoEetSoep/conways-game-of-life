@@ -1,4 +1,5 @@
 import tkinter as tk
+import os
 
 class HelpModal(tk.Toplevel):
     def __init__(self, master):
@@ -13,7 +14,9 @@ class HelpModal(tk.Toplevel):
         self.scrollbar.config(command = self.manual.yview)
 
         # Manual
-        self.manual.insert(tk.END, 'Manual:\n\nComing Soon')
+        with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'manual.txt'), 'r', encoding = 'UTF-8') as manual:
+            self.manual.insert(tk.END, manual.read())
+            manual.close()
 
         self.manual.config(state = tk.DISABLED)
 
