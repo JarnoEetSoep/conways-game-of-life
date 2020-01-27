@@ -1,5 +1,3 @@
-import tkinter as tk
-
 class Square:
     def __init__(self, gamegrid, canvas, ID, x, y, state, alive_color, dead_color):
         self.canvas = canvas

@@ -1,12 +1,14 @@
 import tkinter as tk
 import os
 
+from BetterScrollbar import BetterScrollbar
+
 class HelpModal(tk.Toplevel):
     def __init__(self, master):
         super().__init__(master)
         self.container = tk.Frame(self)
 
-        self.scrollbar = tk.Scrollbar(self.container)
+        self.scrollbar = BetterScrollbar(self.container)
         self.scrollbar.grid(row = 0, column = 1, sticky = tk.N + tk.S + tk.E)
 
         self.manual = tk.Text(self.container, font = ('Verdana', 10), height = 37, width = 47, wrap = tk.WORD, yscrollcommand = self.scrollbar.set)

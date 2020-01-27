@@ -1,9 +1,10 @@
 import tkinter as tk
-from Application import Application
 import argparse
 import json
 import sys
 import os
+
+from Application import Application
 
 parser = argparse.ArgumentParser(description='Start Conway\'s Game of Life')
 parser.add_argument('-f', '--file', help = 'The .cgol file you want to use')

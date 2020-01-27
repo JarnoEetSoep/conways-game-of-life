@@ -1,15 +1,18 @@
 import tkinter as tk
 from tkinter import filedialog
+from tkinter import messagebox
 from PIL import Image, ImageTk
 from Thread import Thread
 import json
 import time
 import os
+
 from Square import Square
 from Grid import Grid
 from DelayModal import DelayModal
 from HelpModal import HelpModal
 from SettingsModal import SettingsModal
+from BetterScrollbar import BetterScrollbar
 
 class Application(tk.Frame):
     def __init__(self, master = None, width = 40, height = 25, filepath = None):
@@ -81,6 +84,7 @@ class Application(tk.Frame):
         self.menu_examples.add_command(label = 'Heavyweight spaceship', command = lambda: self.loadFile(File = os.path.normpath(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'examples', 'spaceships', 'heavyweight-spaceship.cgol'))))
         self.menu_examples.add_command(label = 'Spider', command = lambda: self.loadFile(File = os.path.normpath(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'examples', 'spaceships', 'spider.cgol'))))
         self.menu_examples.add_command(label = 'Weekender', command = lambda: self.loadFile(File = os.path.normpath(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'examples', 'spaceships', 'weekender.cgol'))))
+        self.menu_examples.add_command(label = 'Photon', command = lambda: self.loadFile(File = os.path.normpath(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'examples', 'spaceships', 'photon.cgol'))))
 
         self.menu_examples.add_separator()
 
@@ -132,10 +136,10 @@ class Application(tk.Frame):
         self.game_container.columnconfigure(0, weight = 1)
         self.game_container.grid(row = 1, column = 0, columnspan = 2, sticky = tk.N + tk.E + tk.S + tk.W)
 
-        self.game_scrollbar_h = tk.Scrollbar(self.game_container, orient = tk.HORIZONTAL)
+        self.game_scrollbar_h = BetterScrollbar(self.game_container, orient = tk.HORIZONTAL)
         self.game_scrollbar_h.grid(row = 1, column = 0, sticky = tk.W + tk.E)
 
-        self.game_scrollbar_v = tk.Scrollbar(self.game_container, orient = tk.VERTICAL)
+        self.game_scrollbar_v = BetterScrollbar(self.game_container, orient = tk.VERTICAL)
         self.game_scrollbar_v.grid(row = 0, column = 1, sticky = tk.N + tk.S)
 
         self.game = tk.Canvas(self.game_container, cursor = 'hand2', bd = 0, xscrollcommand = self.game_scrollbar_h.set, yscrollcommand = self.game_scrollbar_v.set)
@@ -331,6 +335,7 @@ class Application(tk.Frame):
             save = {}
             save['wrapleftright'] = bool(self.leftright.get())
             save['wrapupdown'] = bool(self.updown.get())
+            save['rule'] = self.settings['rule']
             g = self.gamegrid()
             save['board'] = [[g[j][i] for j in range(len(g))] for i in range(len(g[0]))]
             
@@ -353,6 +358,7 @@ class Application(tk.Frame):
             save = {}
             save['wrapleftright'] = bool(self.leftright.get())
             save['wrapupdown'] = bool(self.updown.get())
+            save['rule'] = self.settings['rule']
             g = self.gamegrid()
             save['board'] = [[g[j][i] for j in range(len(g))] for i in range(len(g[0]))]
             
@@ -366,6 +372,10 @@ class Application(tk.Frame):
             data = json.loads(cgol.read())
             try:
                 board = data['board']
+
+                for i in range(0, len(board)):
+                    assert len(board[i]) == len(board[i - 1])
+
                 board = [[board[j][i] for j in range(len(board))] for i in range(len(board[0]))]
 
                 self.width.set(len(board))
@@ -373,14 +383,23 @@ class Application(tk.Frame):
 
                 self.leftright.set(int(data['wrapleftright']))
                 self.updown.set(int(data['wrapupdown']))
+                self.settings['rule'] = data['rule']
 
                 self.setResolution()
 
                 self.gamegrid.setGrid(board)
                 self.updateGrid(compute = False)
+
                 if File == None: self.master.title(f'{os.path.basename(os.path.normpath(self.filepath))} - Conway\'s Game of Life')
+
+                with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'settings.json'), 'w', encoding = 'UTF-8') as settings:
+                    settings.write(json.dumps(self.settings, indent = 4))
+                    settings.close()
+
+            except (TypeError, KeyError, AssertionError):
+                messagebox.showerror('Couldn\'t load file', f'File couldn\'t be loaded, bacause the save file is probably corrupted. Make sure it has the following properties: wrapleftright, wrapupdown, rule and board. For more info see the documentation (nice question mark in the left-bottom corner.')
             except Exception as e:
-                print(e)
+                messagebox.showerror('Couldn\'t load file', f'This is an uncaught exeption. Please send the following to the developer.\n{e}')
             
             cgol.close()
     
