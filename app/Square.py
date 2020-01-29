@@ -15,6 +15,10 @@ class Square:
         self.canvas.itemconfig(f'{self.x},{self.y}', fill = self.alive_color if self.state == 1 else self.dead_color)
     
     def switchState(self, e = None):
+        if e.state:
+            if e.state == 1:
+                return None
+
         if self.state == 0:
             self.state = 1
         else:

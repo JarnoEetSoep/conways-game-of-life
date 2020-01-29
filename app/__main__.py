@@ -31,6 +31,24 @@ if args.file:
         print(f'"{cgol_path}" is not a valid .cgol file')
         sys.exit()
 
+try:
+    with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'settings.json'), 'r', encoding = 'UTF-8') as settings:
+        s = json.loads(settings)
+        s['alive-color']
+        s['dead-color']
+        s['rule']
+        s.close()
+except:
+    with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'settings.json'), 'w', encoding = 'UTF-8') as settings:
+        s = {
+            'alive-color': '#000000',
+            'dead-color': '#ffffff',
+            'rule': 'b3s23'
+        }
+
+        settings.write(json.dumps(s, indent = 4))
+        settings.close()
+
 root = tk.Tk()
 
 root.resizable(1, 1)

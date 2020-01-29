@@ -63,15 +63,15 @@ class Application(tk.Frame):
         self.menu.add_cascade(label = 'File', menu = self.menu_file)
 
         self.menu_file.add_command(label = 'New File', accelerator = 'Ctrl+N', command = self.newFile)
-        self.master.bind('<Control-n>', self.newFile)
+        self.master.bind_all('<Control-n>', self.newFile)
         self.menu_file.add_separator()
         self.menu_file.add_command(label = 'Open...', accelerator = 'Ctrl+O', command = self.openFile)
-        self.master.bind('<Control-o>', self.openFile)
+        self.master.bind_all('<Control-o>', self.openFile)
         self.menu_file.add_separator()
         self.menu_file.add_command(label = 'Save', accelerator = 'Ctrl+S', command = self.saveFile)
-        self.master.bind('<Control-s>', self.saveFile)
+        self.master.bind_all('<Control-s>', self.saveFile)
         self.menu_file.add_command(label = 'Save As...', accelerator = 'Ctrl+Shift+S', command = self.saveFileAs)
-        self.master.bind('<Control-S>', self.saveFileAs)
+        self.master.bind_all('<Control-S>', self.saveFileAs)
         self.menu_file.add_separator()
 
         self.menu_examples = tk.Menu(self.menu_file, tearoff = 0)
@@ -105,6 +105,12 @@ class Application(tk.Frame):
 
         self.menu_file.add_separator()
         self.menu_file.add_command(label = 'Settings', command = self.openSettings)
+
+        self.menu_help = tk.Menu(self.menu, tearoff = 0)
+        self.menu.add_cascade(label = 'Help', menu = self.menu_help)
+
+        self.menu_help.add_command(label = 'Manual', accelerator = 'F1', command = self.help)
+        self.master.bind_all('<F1>', self.help)
 
         self.master.config(menu = self.menu)
 
@@ -145,13 +151,16 @@ class Application(tk.Frame):
         self.game = tk.Canvas(self.game_container, cursor = 'hand2', bd = 0, xscrollcommand = self.game_scrollbar_h.set, yscrollcommand = self.game_scrollbar_v.set)
         self.game.grid(row = 0, column = 0, sticky = tk.N + tk.W + tk.E + tk.S)
 
-        self.game.bind('<Shift-MouseWheel>', lambda e: self.game.xview_scroll(int(e.delta / 120), 'units'))
-        self.game.bind('<Shift-Button-4>', lambda e: self.game.xview_scroll(int(e.delta / 120), 'units'))
-        self.game.bind('<Shift-Button-5>', lambda e: self.game.xview_scroll(int(e.delta / 120), 'units'))
+        self.game.bind('<Shift-MouseWheel>', lambda e: self.game.xview_scroll(-int(e.delta / 120), 'units'))
+        self.game.bind('<Shift-Button-4>', lambda e: self.game.xview_scroll(-int(e.delta / 120), 'units'))
+        self.game.bind('<Shift-Button-5>', lambda e: self.game.xview_scroll(-int(e.delta / 120), 'units'))
 
         self.game.bind('<MouseWheel>', lambda e: self.game.yview_scroll(-int(e.delta / 120), 'units'))
         self.game.bind('<Button-4>', lambda e: self.game.yview_scroll(-int(e.delta / 120), 'units'))
         self.game.bind('<Button-5>', lambda e: self.game.yview_scroll(-int(e.delta / 120), 'units'))
+
+        self.game.bind('<Shift-Button-1>', lambda e: self.game.scan_mark(e.x, e.y))
+        self.game.bind('<Shift-B1-Motion>', lambda e: self.game.scan_dragto(e.x, e.y, gain = 1))
 
         self.game.bind('<Control-MouseWheel>', self.zoomGame)
         self.game.bind('<Control-Button-4>', self.zoomGame)
@@ -309,7 +318,7 @@ class Application(tk.Frame):
         self.updateGridThread.kill()
         self.master.destroy()
     
-    def help(self):
+    def help(self, e = None):
         if self.helpModal and self.helpModal.winfo_exists():
             self.helpModal.focus_force()
         else:
@@ -399,7 +408,7 @@ class Application(tk.Frame):
             except (TypeError, KeyError, AssertionError):
                 messagebox.showerror('Couldn\'t load file', f'File couldn\'t be loaded, bacause the save file is probably corrupted. Make sure it has the following properties: wrapleftright, wrapupdown, rule and board. For more info see the documentation (nice question mark in the left-bottom corner.')
             except Exception as e:
-                messagebox.showerror('Couldn\'t load file', f'This is an uncaught exeption. Please send the following to the developer.\n{e}')
+                messagebox.showerror('Couldn\'t load file', f'This is an uncaught exeption. Please send the following to the developer.\n\n{e}\n{e.args}')
             
             cgol.close()
     
