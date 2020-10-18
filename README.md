@@ -26,4 +26,4 @@ Start Conway's Game of Life by running `app/__main__.py` or just `py app` (Linux
 * Loading screen
 
 # Contact
-You can contact me on Discord: `JarnoTheProgrammer#5809`
+You can contact me on Discord: `Jargneau#5809`
