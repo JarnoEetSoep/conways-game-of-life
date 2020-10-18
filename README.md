@@ -1,5 +1,5 @@
 # Request:
-## I have spent hours upon hours to figure out how to package this (create an .exe), and I have decided that I can better focus on the development of the application. If you know how to package this, please contact me (Discord: JarnoTheProgrammer#5809).
+## I have spent hours upon hours to figure out how to package this (create an .exe), and I have decided that I can better focus on the development of the application. If you know how to package this, please contact me (Discord: Jargneau#5809).
 
 # Conways-Game-of-Life
 Conway's game of Life in Python 3 using tkinter.
